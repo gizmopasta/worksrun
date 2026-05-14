@@ -480,109 +480,105 @@ TYPES.forEach(type => {
 </script>
 
 <!-- ══ DOWNLOAD BUTTON ══════════════════════ -->
-<div style="position:fixed; bottom:32px; right:32px; z-index:9999;">
-  <button id="captureBtn" onclick="captureAllCanvases()" style="
-    background: #00C85F; color: #000; border: none;
-    padding: 12px 24px; font-family: 'Courier New', monospace;
-    font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
-    cursor: pointer; display: flex; align-items: center; gap: 10px;
-  ">
-    <span id="captureBtnText">↓ CAPTURE & DOWNLOAD</span>
-  </button>
+<div style="position:fixed; bottom:32px; right:32px; z-index:9999; display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+  <div id="captureStatus" style="font-family:'Courier New',monospace; font-size:9px; letter-spacing:0.15em; color:#555; text-align:right;"></div>
+  <button id="captureBtn" onclick="downloadAll()" style="
+    background:#00C85F; color:#000; border:none;
+    padding:12px 24px; font-family:'Courier New',monospace;
+    font-size:10px; letter-spacing:0.25em; text-transform:uppercase;
+    cursor:pointer;
+  ">↓ DOWNLOAD ALL PNGs</button>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-async function captureAllCanvases() {
+async function downloadAll() {
   const btn = document.getElementById('captureBtn');
-  const txt = document.getElementById('captureBtnText');
-  txt.textContent = '⏳ COMPOSITING...';
-  btn.style.background = '#333'; btn.style.color = '#aaa';
+  const status = document.getElementById('captureStatus');
   btn.disabled = true;
+  btn.style.background = '#333';
+  btn.style.color = '#aaa';
+  btn.textContent = '⏳ PREPARING...';
 
-  await new Promise(r => setTimeout(r, 100));
+  await new Promise(r => setTimeout(r, 80));
 
   try {
+    // ── 1. 헤더 캡처 (html2canvas) ──────────
+    const header = document.querySelector('.top-header');
+    status.textContent = 'Capturing header...';
+    const headerCanvas = await html2canvas(header, {
+      scale: 2,
+      backgroundColor: '#0a0a0a',
+      logging: false,
+      width: header.scrollWidth,
+      height: header.scrollHeight,
+    });
+    triggerDownload(headerCanvas, '00_BRIEF_PROCESS');
+    await delay(300);
+
+    // ── 2. 모든 canvas 자동 수집 ──────────────
+    // 페이지 내 canvas를 순서대로 전부 수집
     const canvases = Array.from(document.querySelectorAll('canvas'));
-    if (!canvases.length) throw new Error('No canvases');
+    const total = canvases.length;
 
-    const PAD = 40;        // 좌우 여백
-    const GAP = 16;        // 캔버스 사이 간격
-    const LABEL_H = 28;    // 라벨 높이
-    const SECTION_GAP = 56; // 섹션 간 간격
-    const CW = 1200, CH = 675;
+    for (let i = 0; i < canvases.length; i++) {
+      const c = canvases[i];
+      const id = c.id || `canvas_${i+1}`;
 
-    // 섹션 구분: T1~T5, 각 3개
-    const TYPES = ['T1·Rhythm','T2·Chaos','T3·Focal','T4·Breath','T5·Minimal'];
-    const BG_LABELS = ['White #FFFFFF','Navy2 #202936','Green #00C85F'];
+      // 라벨 텍스트 수집 (card-id, card-diff)
+      const wrap = c.closest('.canvas-wrap') || c.parentElement;
+      const card = wrap ? wrap.closest('.card') : null;
+      const labelEl = card ? card.querySelector('.card-id') : null;
+      const diffEl  = card ? card.querySelector('.card-diff') : null;
+      const label = labelEl ? labelEl.textContent.trim().replace(/[^a-zA-Z0-9_가-힣·\-]/g, '_') : id;
+      const bg    = diffEl  ? diffEl.textContent.trim().replace(/[^a-zA-Z0-9#가-힣]/g, '_') : '';
 
-    // 전체 높이 계산
-    // 헤더 없이 캔버스만: 5섹션 × (3캔버스 × (LABEL_H + CH + GAP) + SECTION_GAP)
-    const blockH = LABEL_H + CH;
-    const sectionH = 3 * blockH + 2 * GAP + 80; // 섹션 헤더 포함
-    const totalH = PAD + 5 * sectionH + 4 * SECTION_GAP + PAD;
-    const totalW = CW + PAD * 2;
+      const filename = `${String(i+1).padStart(2,'0')}_${label}_${bg}`.replace(/_{2,}/g,'_').slice(0, 80);
 
-    const out = document.createElement('canvas');
-    out.width = totalW;
-    out.height = totalH;
-    const ctx = out.getContext('2d');
+      status.textContent = `Downloading ${i+1}/${total}: ${id}`;
+      btn.textContent = `↓ ${i+1} / ${total}`;
 
-    // 배경
-    ctx.fillStyle = '#0a0a0a';
-    ctx.fillRect(0, 0, totalW, totalH);
+      // 각 canvas를 2× 해상도로 뽑기
+      const out = document.createElement('canvas');
+      out.width  = c.width  * 2;
+      out.height = c.height * 2;
+      const ctx = out.getContext('2d');
+      ctx.scale(2, 2);
+      ctx.drawImage(c, 0, 0);
 
-    let y = PAD;
-
-    for (let ti = 0; ti < 5; ti++) {
-      // 섹션 헤더 텍스트
-      ctx.font = 'bold 22px Courier New';
-      ctx.fillStyle = '#333';
-      ctx.fillText(`T${ti+1}`, PAD, y + 20);
-      ctx.font = '11px Courier New';
-      ctx.fillStyle = '#aaa';
-      ctx.fillText(TYPES[ti], PAD + 40, y + 18);
-
-      // 구분선
-      ctx.fillStyle = '#2e2e2e';
-      ctx.fillRect(PAD, y + 28, CW, 1);
-      y += 44;
-
-      for (let bi = 0; bi < 3; bi++) {
-        const srcCanvas = canvases[ti * 3 + bi];
-
-        // 라벨
-        ctx.font = '9px Courier New';
-        ctx.fillStyle = '#777';
-        ctx.fillText(`${TYPES[ti].split('·')[0]}_${bi+1}  ·  BG: ${BG_LABELS[bi]}`, PAD, y + 10);
-        y += LABEL_H;
-
-        // 캔버스 이미지 복사
-        ctx.drawImage(srcCanvas, PAD, y, CW, CH);
-        y += CH + GAP;
-      }
-
-      y += SECTION_GAP;
+      triggerDownload(out, filename);
+      await delay(350); // 브라우저 다운로드 큐 여유
     }
 
-    // 다운로드
-    const link = document.createElement('a');
-    link.download = 'WORKS-pattern-study-v5.png';
-    link.href = out.toDataURL('image/png');
-    link.click();
-
-    txt.textContent = '✓ DOWNLOADED';
-    btn.style.background = '#00C85F'; btn.style.color = '#000';
+    status.textContent = `✓ ${total + 1} files downloaded`;
+    btn.textContent = '✓ DONE';
+    btn.style.background = '#00C85F';
+    btn.style.color = '#000';
     setTimeout(() => {
-      txt.textContent = '↓ CAPTURE & DOWNLOAD';
+      btn.textContent = '↓ DOWNLOAD ALL PNGs';
       btn.disabled = false;
-    }, 2000);
+      status.textContent = '';
+    }, 3000);
 
   } catch(e) {
     console.error(e);
-    txt.textContent = '✗ ERROR';
-    btn.style.background = '#ff4444'; btn.style.color = '#fff';
+    status.textContent = '✗ Error: ' + e.message;
+    btn.textContent = '✗ ERROR — RETRY';
+    btn.style.background = '#ff4444';
+    btn.style.color = '#fff';
     btn.disabled = false;
   }
+}
+
+function triggerDownload(canvas, filename) {
+  const link = document.createElement('a');
+  link.download = filename + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function delay(ms) {
+  return new Promise(r => setTimeout(r, ms));
 }
 </script>
 
