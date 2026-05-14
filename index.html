@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NAVER WORKS — Pattern Study v4</title>
+<title>NAVER WORKS — Pattern Study v5</title>
 <style>
   :root {
     --green:  #00C85F;
@@ -52,10 +52,7 @@
     padding: 2px 8px;
     margin-bottom: 20px;
   }
-
-  .order-list {
-    list-style: none;
-  }
+  .order-list { list-style: none; }
   .order-list li {
     font-size: 10px;
     letter-spacing: 0.08em;
@@ -73,19 +70,11 @@
     font-size: 9px;
     letter-spacing: 0.18em;
   }
-  .order-list li .val {
-    color: #ddd;
-  }
-  .order-list li .val.confirm {
-    color: var(--green);
-  }
+  .order-list li .val { color: #ddd; }
+  .order-list li .val.confirm { color: var(--green); }
 
   /* Process tracker */
-  .process-track {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
+  .process-track { display: flex; flex-direction: column; gap: 0; }
   .process-track h2 {
     font-size: 10px;
     letter-spacing: 0.4em;
@@ -94,223 +83,109 @@
     margin-bottom: 10px;
   }
   .process-step {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--ui-line);
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 8px 0; border-bottom: 1px solid var(--ui-line);
   }
-  .step-num {
-    font-size: 9px;
-    letter-spacing: 0.1em;
-    color: var(--ui-dim);
-    width: 20px;
-    flex-shrink: 0;
-    padding-top: 1px;
-  }
-  .step-content {}
-  .step-title {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    color: var(--ui-dim);
-    text-transform: uppercase;
-  }
-  .step-sub {
-    font-size: 9px;
-    letter-spacing: 0.08em;
-    color: #777;
-    margin-top: 2px;
-  }
-  .process-step.done .step-title { color: #999; text-decoration: line-through; text-decoration-color: #bbb; }
-  .process-step.done .step-num   { color: #bbb; }
-  .process-step.active .step-num   { color: var(--green); }
+  .step-num { font-size: 9px; letter-spacing: 0.1em; color: var(--ui-dim); width: 20px; flex-shrink: 0; padding-top: 1px; }
+  .step-title { font-size: 10px; letter-spacing: 0.1em; color: var(--ui-dim); text-transform: uppercase; }
+  .step-sub { font-size: 9px; letter-spacing: 0.08em; color: #555; margin-top: 2px; }
+  .process-step.done .step-title { color: #999; text-decoration: line-through; text-decoration-color: #555; }
+  .process-step.done .step-num { color: #555; }
+  .process-step.active .step-num { color: var(--green); }
   .process-step.active .step-title { color: var(--green); }
-  .process-step.active .step-sub   { color: #999; }
-  .process-step.active {
-    background: rgba(0,200,95,0.03);
-    margin: 0 -8px;
-    padding: 8px 8px;
-  }
+  .process-step.active .step-sub { color: #999; }
+  .process-step.active { background: rgba(0,200,95,0.03); margin: 0 -8px; padding: 8px 8px; }
   .now-badge {
-    font-size: 8px;
-    letter-spacing: 0.2em;
-    color: var(--green);
-    border: 1px solid rgba(0,200,95,0.4);
-    padding: 1px 6px;
-    margin-left: 8px;
-    vertical-align: middle;
+    font-size: 8px; letter-spacing: 0.2em; color: var(--green);
+    border: 1px solid rgba(0,200,95,0.4); padding: 1px 6px; margin-left: 8px; vertical-align: middle;
   }
 
   /* ── SECTION ───────────────────────────── */
-  .section {
-    margin-bottom: 72px;
+  .section { margin-bottom: 72px; }
+  .section-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 6px; }
+  .section-id { font-size: 28px; letter-spacing: -0.01em; color: #333; font-weight: bold; line-height: 1; }
+  .section-title { font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--ui-mid); }
+  .section-concept {
+    font-size: 10px; letter-spacing: 0.08em; color: #666;
+    margin-bottom: 14px; padding: 8px 12px;
+    border-left: 2px solid #2a2a2a;
   }
-  .section-header {
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-    margin-bottom: 6px;
-  }
-  .section-id {
-    font-size: 22px;
-    letter-spacing: -0.01em;
-    color: #777;
-    font-weight: bold;
-    line-height: 1;
-  }
-  .section-title {
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--ui-mid);
-  }
-  .section-divider {
-    height: 1px;
-    background: var(--ui-line);
-    margin-bottom: 20px;
-  }
+  .section-concept strong { color: #999; }
+  .section-divider { height: 1px; background: var(--ui-line); margin-bottom: 14px; }
 
-  /* Fixed variables row */
-  .fixed-vars {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
+  .fixed-vars { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
   .var-chip {
-    font-size: 9px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    padding: 3px 10px;
-    border: 1px solid #444;
-    color: #999;
+    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 3px 10px; border: 1px solid #333; color: #777;
   }
-  .var-chip.highlight {
-    border-color: #777;
-    color: #bbb;
-  }
+  .var-chip.hi { border-color: #444; color: #999; }
 
-  /* Cards: 세로 1열, 18개 전부 표시 */
-  .cards {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  /* Single card */
-  .card {
-    position: relative;
-  }
+  /* Cards */
+  .cards { display: flex; flex-direction: column; gap: 16px; }
+  .card { position: relative; }
   .card-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px;
   }
-  .card-id {
-    font-size: 11px;
-    letter-spacing: 0.25em;
-    color: #ddd;
-    text-transform: uppercase;
-  }
-  .card-diff {
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border: 1px solid;
-  }
-  .card-diff.bg-white  { color: #bbb; border-color: #777; }
-  .card-diff.bg-green  { color: var(--green); border-color: rgba(0,200,95,0.35); }
-  .card-diff.bg-shift  { color: var(--blue);  border-color: rgba(0,140,255,0.35); }
+  .card-id { font-size: 11px; letter-spacing: 0.25em; color: #aaa; text-transform: uppercase; }
+  .card-diff { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; padding: 2px 8px; border: 1px solid; }
+  .card-diff.bg-white  { color: #bbb; border-color: #555; }
+  .card-diff.bg-navy   { color: var(--blue); border-color: rgba(0,140,255,0.4); }
+  .card-diff.bg-green  { color: var(--green); border-color: rgba(0,200,95,0.4); }
 
-  canvas {
-    display: block;
-    width: 1200px;
-    height: 675px;
-  }
+  canvas { display: block; width: 1200px; height: 675px; }
 
-  /* Inline variable overlay on canvas */
-  .canvas-wrap {
-    position: relative;
-  }
+  .canvas-wrap { position: relative; }
   .canvas-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 10px 16px;
-    background: rgba(0,0,0,0.72);
-    display: flex;
-    gap: 16px;
-    align-items: center;
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 10px 16px; background: rgba(0,0,0,0.72);
+    display: flex; gap: 16px; align-items: center;
   }
-  .ov-item {
-    font-size: 8.5px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.6);
-  }
-  .ov-item span {
-    color: rgba(255,255,255,0.95);
-    margin-left: 5px;
-  }
-  .ov-divider {
-    width: 1px;
-    height: 10px;
-    background: rgba(255,255,255,0.1);
-  }
+  .ov-item { font-size: 8.5px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+  .ov-item span { color: rgba(255,255,255,0.9); margin-left: 5px; }
+  .ov-div { width: 1px; height: 10px; background: rgba(255,255,255,0.15); }
 </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════════════
-     TOP HEADER: 전체 오더 + 프로세스
-════════════════════════════════════════ -->
+<!-- ══ TOP HEADER ══════════════════════════════ -->
 <div class="top-header">
-
-  <!-- LEFT: 전체 오더 -->
   <div>
     <h1>Full Order Brief</h1>
-    <div class="version-tag">v4 · Pattern Study</div>
+    <div class="version-tag">v5 · Type Study — 5 Visual Types × 3 BG</div>
     <ul class="order-list">
       <li><span class="key">Project</span><span class="val confirm">NAVER WORKS 마라톤 행사</span></li>
       <li><span class="key">Output</span><span class="val confirm">SVG (프레임 캡처) + Lottie JSON (모션)</span></li>
       <li><span class="key">Pattern</span><span class="val confirm">Pattern 1 — 세로선 기반</span></li>
       <li><span class="key">Line dir</span><span class="val confirm">세로 (Vertical)</span></li>
       <li><span class="key">Line weight</span><span class="val confirm">굵은 선 소수 + 얇은 선 다수 / 강약 대비 명확</span></li>
-      <li><span class="key">Weight levels</span><span class="val">5단계 vs 8단계+ — 비교 중</span></li>
-      <li><span class="key">Line density</span><span class="val">촘촘 / 보통 / 여유 — 비교 중</span></li>
+      <li><span class="key">Weight levels</span><span class="val">유형별 상이 — 비교 중</span></li>
+      <li><span class="key">Line density</span><span class="val">유형별 상이 — 비교 중</span></li>
       <li><span class="key">Glow</span><span class="val confirm">없음 (선명하게)</span></li>
       <li><span class="key">Line colors</span><span class="val confirm">WORKS 6색 랜덤 변화</span></li>
       <li><span class="key">End frame</span><span class="val confirm">WORKS Green #00C85F 로 마무리</span></li>
-      <li><span class="key">BG</span><span class="val">White / Color Shift / Green — 비교 중</span></li>
+      <li><span class="key">BG</span><span class="val">White / Navy2 / Green — 비교 중</span></li>
       <li><span class="key">Motion</span><span class="val">그래픽 확정 후 결정</span></li>
       <li><span class="key">Duration</span><span class="val">그래픽 확정 후 결정</span></li>
     </ul>
 
-    <!-- 시안 구성 표 -->
     <div style="margin-top:28px;">
       <h1 style="margin-bottom:10px;">Study Composition</h1>
       <ul class="order-list">
-        <li><span class="key">총 시안</span><span class="val confirm">18개</span></li>
-        <li><span class="key">구조 A</span><span class="val">굵기 5단계 · 밀도 촘촘 × 배경 3종</span></li>
-        <li><span class="key">구조 B</span><span class="val">굵기 5단계 · 밀도 보통 × 배경 3종</span></li>
-        <li><span class="key">구조 C</span><span class="val">굵기 5단계 · 밀도 여유 × 배경 3종</span></li>
-        <li><span class="key">구조 D</span><span class="val">굵기 8단계+ · 밀도 촘촘 × 배경 3종</span></li>
-        <li><span class="key">구조 E</span><span class="val">굵기 8단계+ · 밀도 보통 × 배경 3종</span></li>
-        <li><span class="key">구조 F</span><span class="val">굵기 8단계+ · 밀도 여유 × 배경 3종</span></li>
-        <li><span class="key">배경 변수</span><span class="val">White #FFFFFF / Green #00C85F / Color Shift (6색 그라데이션)</span></li>
-        <li><span class="key">고정 변수</span><span class="val">선 방향(세로) · 선 컬러(WORKS 6색) · Glow 없음</span></li>
-        <li><span class="key">비교 변수</span><span class="val">굵기 단계(5 vs 8+) · 밀도(촘촘/보통/여유) · 배경(3종)</span></li>
+        <li><span class="key">총 시안</span><span class="val confirm">15개 (5 유형 × 배경 3종)</span></li>
+        <li><span class="key">Type 1</span><span class="val">Rhythm — 규칙적 리듬, 굵기 패턴 반복</span></li>
+        <li><span class="key">Type 2</span><span class="val">Chaos — 완전 랜덤, 굵기·간격 예측 불가</span></li>
+        <li><span class="key">Type 3</span><span class="val">Focal — 중앙 집중, 가운데 굵고 양끝 얇아짐</span></li>
+        <li><span class="key">Type 4</span><span class="val">Breath — 파동형 밀도, 촘촘·여유 구간 교차</span></li>
+        <li><span class="key">Type 5</span><span class="val">Minimal — 극단적 여백, 굵기 차이 극단적</span></li>
+        <li><span class="key">배경 변수</span><span class="val">White #FFFFFF / Navy2 #202936 / Green #00C85F</span></li>
+        <li><span class="key">고정 변수</span><span class="val">선 방향(세로) · WORKS 6색 · Glow 없음</span></li>
+        <li><span class="key">비교 변수</span><span class="val">선 배치 유형 (시각적으로 명확히 다른 5가지)</span></li>
       </ul>
     </div>
   </div>
 
-  <!-- RIGHT: 프로세스 -->
   <div class="process-track">
     <h2>Process</h2>
-
     <div class="process-step done">
       <div class="step-num">01</div>
       <div class="step-content">
@@ -318,7 +193,6 @@
         <div class="step-sub">행사 목적 / 출력 포맷 / 패턴 방향 확정</div>
       </div>
     </div>
-
     <div class="process-step done">
       <div class="step-num">02</div>
       <div class="step-content">
@@ -326,7 +200,6 @@
         <div class="step-sub">넷플릭스 인트로 + 카카오 엔터테인먼트 BI 분석 완료</div>
       </div>
     </div>
-
     <div class="process-step done">
       <div class="step-num">03</div>
       <div class="step-content">
@@ -334,15 +207,13 @@
         <div class="step-sub">WORKS 6색 + CMYK/Pantone 등록 완료</div>
       </div>
     </div>
-
     <div class="process-step active">
       <div class="step-num">04</div>
       <div class="step-content">
         <div class="step-title">정적 그래픽 구조 탐색 <span class="now-badge">NOW</span></div>
-        <div class="step-sub">굵기 단계 × 밀도 × 배경 — 18개 시안 비교</div>
+        <div class="step-sub">5가지 시각 유형 × 배경 3종 — 15개 시안 비교</div>
       </div>
     </div>
-
     <div class="process-step">
       <div class="step-num">05</div>
       <div class="step-content">
@@ -350,7 +221,6 @@
         <div class="step-sub">시안 중 방향 선택 + 세부 조정</div>
       </div>
     </div>
-
     <div class="process-step">
       <div class="step-num">06</div>
       <div class="step-content">
@@ -358,7 +228,6 @@
         <div class="step-sub">리듬 / 길이 / 전환 방식</div>
       </div>
     </div>
-
     <div class="process-step">
       <div class="step-num">07</div>
       <div class="step-content">
@@ -366,7 +235,6 @@
         <div class="step-sub">브라우저 Canvas 애니메이션</div>
       </div>
     </div>
-
     <div class="process-step">
       <div class="step-num">08</div>
       <div class="step-content">
@@ -374,17 +242,10 @@
         <div class="step-sub">프레임 캡처 SVG + Lottie JSON</div>
       </div>
     </div>
-
   </div>
 </div>
 
-
-<!-- ════════════════════════════════════════
-     SECTIONS A–F
-════════════════════════════════════════ -->
-
 <script>
-// ── 컬러 ──────────────────────────────────
 const C = {
   white:  '#FFFFFF',
   navy1:  '#F0F5FA',
@@ -395,105 +256,182 @@ const C = {
 };
 const LINE_COLS = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
 
-// ── seeded random ─────────────────────────
 function mkRand(seed) {
   let s = (seed >>> 0) || 1;
   return () => { s = (Math.imul(1664525,s)+1013904223)>>>0; return s/0x100000000; };
 }
 
-// ── 선 생성 (얇은 선 편향) ─────────────────
-function makeLines(W, weights, gap, seed) {
+function drawBg(ctx, W, H, bg) {
+  ctx.fillStyle = bg === 'white' ? C.white : bg === 'green' ? C.green : C.navy2;
+  ctx.fillRect(0, 0, W, H);
+}
+
+function fixColor(col, bg) {
+  if (bg === 'white' && (col === C.white || col === C.navy1)) return C.navy2;
+  if (bg === 'green' && col === C.green) return C.white;
+  if (bg === 'navy'  && col === C.navy2) return C.blue;
+  return col;
+}
+
+function drawLines(ctx, W, H, bg, lines) {
+  lines.forEach(l => {
+    ctx.fillStyle = fixColor(l.color, bg);
+    ctx.fillRect(Math.round(l.x - l.w/2), 0, Math.max(1, Math.ceil(l.w)), H);
+  });
+}
+
+// ── TYPE 1: RHYTHM ─────────────────────────
+// 굵기가 패턴을 이루며 반복 (얇얇얇굵 패턴 반복)
+function makeRhythm(W, seed) {
   const rand = mkRand(seed);
+  const pattern = [1, 1, 2, 1, 1, 3, 1, 18, 1, 1, 2, 1, 45, 1, 1, 1, 3, 1, 1, 100];
   const lines = [];
-  let x = 0;
-  while (x < W + 60) {
-    const r = rand();
-    // power > 1 → bias toward lower indices (thinner)
-    const idx = Math.min(Math.floor(Math.pow(r, 2.5) * weights.length), weights.length-1);
-    const w = weights[idx];
+  let x = 0, pi = 0;
+  while (x < W + 120) {
+    const w = pattern[pi % pattern.length];
     const ci = Math.floor(rand() * LINE_COLS.length);
     lines.push({ x: x + w/2, w, color: LINE_COLS[ci] });
-    x += w + gap * (0.3 + rand() * 1.5);
+    x += w + 3 + rand() * 2;
+    pi++;
   }
   return lines;
 }
 
-// ── 배경 그리기 ───────────────────────────
-function drawBg(ctx, W, H, bgType) {
-  if (bgType === 'white') {
-    ctx.fillStyle = C.white; ctx.fillRect(0,0,W,H);
-  } else if (bgType === 'green') {
-    ctx.fillStyle = C.green; ctx.fillRect(0,0,W,H);
-  } else {
-    const g = ctx.createLinearGradient(0,0,W,0);
-    g.addColorStop(0,    C.navy2);
-    g.addColorStop(0.15, C.purple);
-    g.addColorStop(0.38, C.blue);
-    g.addColorStop(0.62, C.green);
-    g.addColorStop(0.82, C.navy1);
-    g.addColorStop(1,    C.navy2);
-    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+// ── TYPE 2: CHAOS ──────────────────────────
+// 완전 랜덤 — 굵기/간격 모두 예측 불가
+function makeChaos(W, seed) {
+  const rand = mkRand(seed);
+  const lines = [];
+  let x = 0;
+  while (x < W + 200) {
+    const r = rand();
+    // 완전 랜덤 굵기: 0.5 ~ 180px, 지수 분포
+    const w = 0.5 + Math.pow(rand(), 3) * 180;
+    const ci = Math.floor(rand() * LINE_COLS.length);
+    lines.push({ x: x + w/2, w, color: LINE_COLS[ci] });
+    // 완전 랜덤 gap: 0 ~ 40px
+    x += w + rand() * 40;
   }
+  return lines;
 }
 
-// ── 패턴 그리기 ───────────────────────────
-function drawPattern(id, weights, gap, bgType, seed) {
-  const canvas = document.getElementById(id);
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  drawBg(ctx, W, H, bgType);
-  const lines = makeLines(W, weights, gap, seed);
-  lines.forEach(l => {
-    let col = l.color;
-    if (bgType === 'white'  && (col === C.white || col === C.navy1)) col = C.navy2;
-    if (bgType === 'green'  && col === C.green) col = C.white;
-    ctx.fillStyle = col;
-    ctx.fillRect(Math.round(l.x - l.w/2), 0, Math.ceil(l.w), H);
-  });
+// ── TYPE 3: FOCAL ──────────────────────────
+// 중앙 집중 — 가운데 굵고 양끝으로 갈수록 얇아짐
+function makeFocal(W, seed) {
+  const rand = mkRand(seed);
+  const lines = [];
+  let x = 0;
+  while (x < W + 120) {
+    // 중앙에서 거리에 따라 굵기 결정
+    const dist = Math.abs((x / W) - 0.5) * 2; // 0=중앙, 1=끝
+    const maxW = 120 * (1 - Math.pow(dist, 0.7));
+    const minW = 0.5;
+    const r = rand();
+    const w = minW + Math.pow(1 - r, 2.5) * maxW;
+    const ci = Math.floor(rand() * LINE_COLS.length);
+    lines.push({ x: x + w/2, w, color: LINE_COLS[ci] });
+    x += w + 1 + rand() * 6;
+  }
+  return lines;
 }
 
-// ── 굵기 세트 ─────────────────────────────
-const W5 = [1, 2, 5, 12, 28];
-const W8 = [0.5, 1, 1.5, 2.5, 4, 7, 13, 22, 36, 52];
+// ── TYPE 4: BREATH ─────────────────────────
+// 파동형 밀도 — 촘촘한 구간과 여유로운 구간이 물결처럼 교차
+function makeBreath(W, seed) {
+  const rand = mkRand(seed);
+  const lines = [];
+  let x = 0;
+  while (x < W + 120) {
+    // 사인파로 밀도 구간 제어
+    const wave = Math.sin((x / W) * Math.PI * 6); // 6주기
+    const density = (wave + 1) / 2; // 0~1
+    // 밀도 높을수록 얇고 촘촘, 낮을수록 굵고 여유
+    const w = density > 0.5
+      ? 0.5 + rand() * 3           // 촘촘 구간: 얇은 선
+      : 8 + rand() * 80;           // 여유 구간: 굵은 선
+    const gap = density > 0.5
+      ? rand() * 3                  // 촘촘 구간: 좁은 간격
+      : 5 + rand() * 30;           // 여유 구간: 넓은 간격
+    const ci = Math.floor(rand() * LINE_COLS.length);
+    lines.push({ x: x + w/2, w, color: LINE_COLS[ci] });
+    x += w + gap;
+  }
+  return lines;
+}
 
-const DENSE  = 2;
-const NORMAL = 7;
-const LOOSE  = 18;
+// ── TYPE 5: MINIMAL ────────────────────────
+// 극단적 여백 — 선 몇 개만, 굵기 차이 극단적
+function makeMinimal(W, seed) {
+  const rand = mkRand(seed);
+  const lines = [];
+  let x = 8;
+  while (x < W - 8) {
+    const r = rand();
+    // 80% 확률로 극얇(0.5~2), 20% 확률로 극굵(40~200)
+    const w = r < 0.80
+      ? 0.5 + rand() * 1.5
+      : 40 + rand() * 160;
+    const ci = Math.floor(rand() * LINE_COLS.length);
+    lines.push({ x: x + w/2, w, color: LINE_COLS[ci] });
+    // 간격도 랜덤하게 넓음
+    x += w + 6 + rand() * 50;
+  }
+  return lines;
+}
 
-// ── 섹션 데이터 ───────────────────────────
-const SECTIONS = [
-  { id:'A', label:'5 Weight Levels', sub:'Dense · 촘촘',   weights:W5, gap:DENSE,  seed:1001 },
-  { id:'B', label:'5 Weight Levels', sub:'Normal · 보통',  weights:W5, gap:NORMAL, seed:2001 },
-  { id:'C', label:'5 Weight Levels', sub:'Loose · 여유',   weights:W5, gap:LOOSE,  seed:3001 },
-  { id:'D', label:'Multi Weight 8+', sub:'Dense · 촘촘',   weights:W8, gap:DENSE,  seed:4001 },
-  { id:'E', label:'Multi Weight 8+', sub:'Normal · 보통',  weights:W8, gap:NORMAL, seed:5001 },
-  { id:'F', label:'Multi Weight 8+', sub:'Loose · 여유',   weights:W8, gap:LOOSE,  seed:6001 },
+// ── 섹션 정의 ─────────────────────────────
+const TYPES = [
+  {
+    id: '1', name: 'Rhythm',
+    concept: '<strong>규칙적 리듬</strong> — 얇은 선 반복 사이에 굵은 선이 박자처럼 등장. 패턴이 반복되며 리듬감 형성.',
+    chips: ['Pattern: 얇얇얇·굵·얇얇·초굵 반복', 'Gap: 균일 (3~5px)', 'Max width: 100px'],
+    makeFn: makeRhythm, seed: 1001
+  },
+  {
+    id: '2', name: 'Chaos',
+    concept: '<strong>완전 랜덤</strong> — 굵기와 간격 모두 예측 불가. 에너지감, 역동성 극대화.',
+    chips: ['Width: 0.5~180px 완전 랜덤', 'Gap: 0~40px 완전 랜덤', '지수 분포로 얇은 선 편향'],
+    makeFn: makeChaos, seed: 2001
+  },
+  {
+    id: '3', name: 'Focal',
+    concept: '<strong>중앙 집중</strong> — 화면 중앙에 굵은 선이 집중되고 양끝으로 갈수록 얇아짐. 시선 중앙 유도.',
+    chips: ['중앙 Max: 120px', '끝단 Min: 0.5px', '거리 기반 지수 함수'],
+    makeFn: makeFocal, seed: 3001
+  },
+  {
+    id: '4', name: 'Breath',
+    concept: '<strong>파동형 밀도</strong> — 촘촘한 구간과 여유로운 구간이 사인파로 교차. 숨쉬는 듯한 리듬.',
+    chips: ['6주기 사인파', '촘촘 구간: 0.5~3px', '여유 구간: 8~88px'],
+    makeFn: makeBreath, seed: 4001
+  },
+  {
+    id: '5', name: 'Minimal',
+    concept: '<strong>극단적 여백</strong> — 선 수 최소화, 굵기 대비 극단적. 80% 극얇, 20% 극굵.',
+    chips: ['얇은 선: 0.5~2px (80%)', '굵은 선: 40~200px (20%)', 'Gap: 6~56px 여유'],
+    makeFn: makeMinimal, seed: 5001
+  },
 ];
 
-const BG_TYPES = [
-  { key:'white',  label:'BG · White #FFFFFF',   cls:'bg-white' },
-  { key:'green',  label:'BG · Green #00C85F',   cls:'bg-green' },
-  { key:'shift',  label:'BG · Color Shift',     cls:'bg-shift' },
+const BGS = [
+  { key:'white', label:'BG · White #FFFFFF',   cls:'bg-white' },
+  { key:'navy',  label:'BG · Navy2 #202936',   cls:'bg-navy'  },
+  { key:'green', label:'BG · Green #00C85F',   cls:'bg-green' },
 ];
 
-// ── DOM 생성 ──────────────────────────────
-const body = document.body;
-
-SECTIONS.forEach(sec => {
+// ── DOM + Canvas 렌더링 ────────────────────
+TYPES.forEach(type => {
   const section = document.createElement('div');
   section.className = 'section';
-
-  // Section header
   section.innerHTML = `
     <div class="section-header">
-      <div class="section-id">${sec.id}</div>
-      <div class="section-title">${sec.label} · ${sec.sub}</div>
+      <div class="section-id">T${type.id}</div>
+      <div class="section-title">${type.name}</div>
     </div>
     <div class="section-divider"></div>
+    <div class="section-concept">${type.concept}</div>
     <div class="fixed-vars">
-      <div class="var-chip highlight">Weight: ${sec.weights.join(' / ')} px</div>
-      <div class="var-chip highlight">Gap base: ${sec.gap}px</div>
+      ${type.chips.map(c => `<div class="var-chip hi">${c}</div>`).join('')}
       <div class="var-chip">Variable → Background (3종)</div>
     </div>
   `;
@@ -501,38 +439,43 @@ SECTIONS.forEach(sec => {
   const cards = document.createElement('div');
   cards.className = 'cards';
 
-  BG_TYPES.forEach((bg, bi) => {
-    const cid = `${sec.id}${bi+1}`;
-    const bgTypeKey = bg.key === 'shift' ? 'colorshift' : bg.key;
-
+  BGS.forEach((bg, bi) => {
+    const cid = `T${type.id}_${bi+1}`;
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
       <div class="card-meta">
-        <div class="card-id">${cid}</div>
+        <div class="card-id">${cid} · ${type.name}</div>
         <div class="card-diff ${bg.cls}">${bg.label}</div>
       </div>
       <div class="canvas-wrap">
         <canvas id="${cid}" width="1200" height="675"></canvas>
         <div class="canvas-overlay">
-          <div class="ov-item">Weight<span>${sec.weights.length}단계</span></div>
-          <div class="ov-divider"></div>
-          <div class="ov-item">Gap<span>${sec.gap}px</span></div>
-          <div class="ov-divider"></div>
+          <div class="ov-item">Type<span>${type.name}</span></div>
+          <div class="ov-div"></div>
           <div class="ov-item">BG<span>${bg.label.replace('BG · ','')}</span></div>
-          <div class="ov-divider"></div>
-          <div class="ov-item">Seed<span>${sec.seed}</span></div>
+          <div class="ov-div"></div>
+          <div class="ov-item">Lines<span>WORKS 6색</span></div>
+          <div class="ov-div"></div>
+          <div class="ov-item">Glow<span>없음</span></div>
         </div>
       </div>
     `;
     cards.appendChild(card);
 
-    // Draw after DOM inserted
-    setTimeout(() => drawPattern(cid, sec.weights, sec.gap, bgTypeKey, sec.seed), 0);
+    setTimeout(() => {
+      const canvas = document.getElementById(cid);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      drawBg(ctx, W, H, bg.key);
+      const lines = type.makeFn(W, type.seed);
+      drawLines(ctx, W, H, bg.key, lines);
+    }, 0);
   });
 
   section.appendChild(cards);
-  body.appendChild(section);
+  document.body.appendChild(section);
 });
 </script>
 </body>
