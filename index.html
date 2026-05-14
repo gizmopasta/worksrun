@@ -175,13 +175,14 @@
       <h1 style="margin-bottom:10px;">Study Composition</h1>
       <ul class="order-list">
         <li><span class="key">버전</span><span class="val confirm">v9 · 10개 시안 (T2/T3/T3b/T4a/T4b × 배경 2종)</span></li>
-        <li><span class="key">T2 · Chaos</span><span class="val">완전 랜덤 / 양쪽 외곽 얇은 선 밀도 증가 / 점보 30~35% Blue/Green / 6색 균등</span></li>
+        <li><span class="key">T2 · Chaos</span><span class="val">완전 랜덤 / 양끝 외곽 얇은 선 밀도 증가 / 점보 30~35% Blue/Green 보장 / 6색 균등</span></li>
         <li><span class="key">T3 · Focal</span><span class="val">중앙 굵고 양끝 얇아짐 / 차순위 = 1순위 50% / 점보 Blue/Green / 6색 균등</span></li>
         <li><span class="key">T3b · Anti-Focal</span><span class="val">양끝 밀집·굵음 / 중앙 얇은 선 2배 밀도 / 점보 Blue/Green / 6색 균등</span></li>
-        <li><span class="key">T4a · L→R</span><span class="val">좌 얇고 촘촘 → 우 굵고 드문 → 맨 우측 점보 30% Blue/Green</span></li>
-        <li><span class="key">T4b · R→L</span><span class="val">우 얇고 촘촘 → 좌 굵고 드문 → 맨 좌측 점보 30% Blue/Green</span></li>
-        <li><span class="key">공통 규칙</span><span class="val confirm">점보 1개 Blue/Green · 차순위 68%(T4 제외) · 6색 전부 보장 · Glow 없음</span></li>
+        <li><span class="key">T4a · L→R</span><span class="val">좌 얇고 촘촘 → 우 굵고 드문 → 맨 우측 가장자리 점보 40% Blue/Green</span></li>
+        <li><span class="key">T4b · R→L</span><span class="val">우 얇고 촘촘 → 좌 굵고 드문 → 맨 좌측 가장자리 점보 40% Blue/Green</span></li>
+        <li><span class="key">공통 규칙</span><span class="val confirm">점보 1개 Blue/Green · 차순위 68% · 6색 전부 보장 · Glow 없음 · 16:9</span></li>
         <li><span class="key">배경 변수</span><span class="val confirm">White #FFFFFF / Navy2 #202936</span></li>
+        <li><span class="key">최근 오더</span><span class="val">T2 점보 보장 확인 ✓ / T4a·T4b 점보 30%→40% / Green 배경 제거</span></li>
       </ul>
     </div>
   </div>
@@ -447,7 +448,7 @@ function makeL2R(W, seed) {
     const gap = 0.5 + t * 28 + rand() * 4;
     x += w + gap;
   }
-  injectJumboEdge(lines, W, seed, 1, 0.30);
+  injectJumboEdge(lines, W, seed, 1, 0.40);
   return ensureAllColors(lines, mkRand(seed + 1));
 }
 
@@ -467,7 +468,7 @@ function makeR2L(W, seed) {
     const gap = 0.5 + (1 - t) * 28 + rand() * 4;
     x += w + gap;
   }
-  injectJumboEdge(lines, W, seed, 0, 0.30);
+  injectJumboEdge(lines, W, seed, 0, 0.40);
   return ensureAllColors(lines, mkRand(seed + 1));
 }
 
