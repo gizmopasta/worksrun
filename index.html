@@ -135,7 +135,7 @@
   .card-diff.bg-navy   { color: var(--blue); border-color: rgba(0,140,255,0.4); }
   .card-diff.bg-green  { color: var(--green); border-color: rgba(0,200,95,0.4); }
 
-  canvas { display: block; width: 1200px; height: 675px; }
+  canvas { display: block; width: 960px; height: 540px; }
 
   .canvas-wrap { position: relative; }
   .canvas-overlay {
@@ -441,7 +441,7 @@ TYPES.forEach(type => {
         <div class="card-diff ${bg.cls}">${bg.label}</div>
       </div>
       <div class="canvas-wrap">
-        <canvas id="${cid}" width="1200" height="675"></canvas>
+        <canvas id="${cid}" width="960" height="540"></canvas>
         <div class="canvas-overlay">
           <div class="ov-item">Type<span>${type.name}</span></div>
           <div class="ov-div"></div>
@@ -455,8 +455,10 @@ TYPES.forEach(type => {
     `;
     cards.appendChild(card);
 
-    // 렌더 큐에 추가
-    renderQueue.push({ id: cid, bgKey: bg.key, makeFn: type.makeFn, seed: type.seed });
+    // 렌더 큐에 추가 — 클로저 문제 방지: 값을 즉시 캡처
+    (function(canvasId, bgKey, fn, seed) {
+      renderQueue.push({ id: canvasId, bgKey: bgKey, makeFn: fn, seed: seed });
+    })(cid, bg.key, type.makeFn, type.seed);
   });
 
   section.appendChild(cards);
