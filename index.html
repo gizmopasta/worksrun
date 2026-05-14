@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAVER WORKS — Pattern Study v4</title>
+<style>
+  :root {
+    --green:  #00C85F;
+    --blue:   #008CFF;
+    --purple: #4757FF;
+    --navy2:  #202936;
+    --white:  #FFFFFF;
+    --navy1:  #F0F5FA;
+    --ui-bg:  #0a0a0a;
+    --ui-line:#2e2e2e;
+    --ui-dim: #888;
+    --ui-mid: #aaa;
+    --ui-txt: #ccc;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--ui-bg);
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    padding: 40px 40px 80px;
+    min-width: 1320px;
+  }
+
+  /* ── TOP HEADER ───────────────────────── */
+  .top-header {
+    border: 1px solid var(--ui-line);
+    padding: 28px 32px;
+    margin-bottom: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .top-header h1 {
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--ui-mid);
+    margin-bottom: 10px;
+  }
+  .version-tag {
+    display: inline-block;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--green);
+    border: 1px solid var(--green);
+    padding: 2px 8px;
+    margin-bottom: 20px;
+  }
+
+  .order-list {
+    list-style: none;
+  }
+  .order-list li {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--ui-txt);
+    padding: 5px 0;
+    border-bottom: 1px solid var(--ui-line);
+    display: flex;
+    gap: 12px;
+  }
+  .order-list li .key {
+    color: var(--ui-dim);
+    width: 110px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+  }
+  .order-list li .val {
+    color: #ddd;
+  }
+  .order-list li .val.confirm {
+    color: var(--green);
+  }
+
+  /* Process tracker */
+  .process-track {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .process-track h2 {
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--ui-mid);
+    margin-bottom: 10px;
+  }
+  .process-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--ui-line);
+  }
+  .step-num {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--ui-dim);
+    width: 20px;
+    flex-shrink: 0;
+    padding-top: 1px;
+  }
+  .step-content {}
+  .step-title {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--ui-dim);
+    text-transform: uppercase;
+  }
+  .step-sub {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    color: #777;
+    margin-top: 2px;
+  }
+  .process-step.done .step-title { color: #999; text-decoration: line-through; text-decoration-color: #bbb; }
+  .process-step.done .step-num   { color: #bbb; }
+  .process-step.active .step-num   { color: var(--green); }
+  .process-step.active .step-title { color: var(--green); }
+  .process-step.active .step-sub   { color: #999; }
+  .process-step.active {
+    background: rgba(0,200,95,0.03);
+    margin: 0 -8px;
+    padding: 8px 8px;
+  }
+  .now-badge {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    color: var(--green);
+    border: 1px solid rgba(0,200,95,0.4);
+    padding: 1px 6px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* ── SECTION ───────────────────────────── */
+  .section {
+    margin-bottom: 72px;
+  }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 6px;
+  }
+  .section-id {
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    color: #777;
+    font-weight: bold;
+    line-height: 1;
+  }
+  .section-title {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ui-mid);
+  }
+  .section-divider {
+    height: 1px;
+    background: var(--ui-line);
+    margin-bottom: 20px;
+  }
+
+  /* Fixed variables row */
+  .fixed-vars {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .var-chip {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid #444;
+    color: #999;
+  }
+  .var-chip.highlight {
+    border-color: #777;
+    color: #bbb;
+  }
+
+  /* Cards: 세로 1열, 18개 전부 표시 */
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Single card */
+  .card {
+    position: relative;
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .card-id {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: #ddd;
+    text-transform: uppercase;
+  }
+  .card-diff {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border: 1px solid;
+  }
+  .card-diff.bg-white  { color: #bbb; border-color: #777; }
+  .card-diff.bg-green  { color: var(--green); border-color: rgba(0,200,95,0.35); }
+  .card-diff.bg-shift  { color: var(--blue);  border-color: rgba(0,140,255,0.35); }
+
+  canvas {
+    display: block;
+    width: 1200px;
+    height: 675px;
+  }
+
+  /* Inline variable overlay on canvas */
+  .canvas-wrap {
+    position: relative;
+  }
+  .canvas-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px 16px;
+    background: rgba(0,0,0,0.72);
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  .ov-item {
+    font-size: 8.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+  }
+  .ov-item span {
+    color: rgba(255,255,255,0.95);
+    margin-left: 5px;
+  }
+  .ov-divider {
+    width: 1px;
+    height: 10px;
+    background: rgba(255,255,255,0.1);
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     TOP HEADER: 전체 오더 + 프로세스
+════════════════════════════════════════ -->
+<div class="top-header">
+
+  <!-- LEFT: 전체 오더 -->
+  <div>
+    <h1>Full Order Brief</h1>
+    <div class="version-tag">v4 · Pattern Study</div>
+    <ul class="order-list">
+      <li><span class="key">Project</span><span class="val confirm">NAVER WORKS 마라톤 행사</span></li>
+      <li><span class="key">Output</span><span class="val confirm">SVG (프레임 캡처) + Lottie JSON (모션)</span></li>
+      <li><span class="key">Pattern</span><span class="val confirm">Pattern 1 — 세로선 기반</span></li>
+      <li><span class="key">Line dir</span><span class="val confirm">세로 (Vertical)</span></li>
+      <li><span class="key">Line weight</span><span class="val confirm">굵은 선 소수 + 얇은 선 다수 / 강약 대비 명확</span></li>
+      <li><span class="key">Weight levels</span><span class="val">5단계 vs 8단계+ — 비교 중</span></li>
+      <li><span class="key">Line density</span><span class="val">촘촘 / 보통 / 여유 — 비교 중</span></li>
+      <li><span class="key">Glow</span><span class="val confirm">없음 (선명하게)</span></li>
+      <li><span class="key">Line colors</span><span class="val confirm">WORKS 6색 랜덤 변화</span></li>
+      <li><span class="key">End frame</span><span class="val confirm">WORKS Green #00C85F 로 마무리</span></li>
+      <li><span class="key">BG</span><span class="val">White / Color Shift / Green — 비교 중</span></li>
+      <li><span class="key">Motion</span><span class="val">그래픽 확정 후 결정</span></li>
+      <li><span class="key">Duration</span><span class="val">그래픽 확정 후 결정</span></li>
+    </ul>
+  </div>
+
+  <!-- RIGHT: 프로세스 -->
+  <div class="process-track">
+    <h2>Process</h2>
+
+    <div class="process-step done">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <div class="step-title">브리프 정의</div>
+        <div class="step-sub">행사 목적 / 출력 포맷 / 패턴 방향 확정</div>
+      </div>
+    </div>
+
+    <div class="process-step done">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <div class="step-title">레퍼런스 수집 & 분석</div>
+        <div class="step-sub">넷플릭스 인트로 + 카카오 엔터테인먼트 BI 분석 완료</div>
+      </div>
+    </div>
+
+    <div class="process-step done">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <div class="step-title">컬러 팔레트 확정</div>
+        <div class="step-sub">WORKS 6색 + CMYK/Pantone 등록 완료</div>
+      </div>
+    </div>
+
+    <div class="process-step active">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <div class="step-title">정적 그래픽 구조 탐색 <span class="now-badge">NOW</span></div>
+        <div class="step-sub">굵기 단계 × 밀도 × 배경 — 18개 시안 비교</div>
+      </div>
+    </div>
+
+    <div class="process-step">
+      <div class="step-num">05</div>
+      <div class="step-content">
+        <div class="step-title">그래픽 구조 확정</div>
+        <div class="step-sub">시안 중 방향 선택 + 세부 조정</div>
+      </div>
+    </div>
+
+    <div class="process-step">
+      <div class="step-num">06</div>
+      <div class="step-content">
+        <div class="step-title">모션 방향 결정</div>
+        <div class="step-sub">리듬 / 길이 / 전환 방식</div>
+      </div>
+    </div>
+
+    <div class="process-step">
+      <div class="step-num">07</div>
+      <div class="step-content">
+        <div class="step-title">모션 프로토타입</div>
+        <div class="step-sub">브라우저 Canvas 애니메이션</div>
+      </div>
+    </div>
+
+    <div class="process-step">
+      <div class="step-num">08</div>
+      <div class="step-content">
+        <div class="step-title">SVG / JSON 추출 테스트</div>
+        <div class="step-sub">프레임 캡처 SVG + Lottie JSON</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     SECTIONS A–F
+════════════════════════════════════════ -->
+
+<script>
+// ── 컬러 ──────────────────────────────────
+const C = {
+  white:  '#FFFFFF',
+  navy1:  '#F0F5FA',
+  green:  '#00C85F',
+  blue:   '#008CFF',
+  purple: '#4757FF',
+  navy2:  '#202936',
+};
+const LINE_COLS = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
+
+// ── seeded random ─────────────────────────
+function mkRand(seed) {
+  let s = (seed >>> 0) || 1;
+  return () => { s = (Math.imul(1664525,s)+1013904223)>>>0; return s/0x100000000; };
+}
+
+// ── 선 생성 (얇은 선 편향) ─────────────────
+function makeLines(W, weights, gap, seed) {
+  const rand = mkRand(seed);
+  const lines = [];
+  let x = 0;
+  while (x < W + 60) {
+    const r = rand();
+    // power > 1 → bias toward lower indices (thinner)
+    const idx = Math.min(Math.floor(Math.pow(r, 2.5) * weights.length), weights.length-1);
+    const w = weights[idx];
+    const ci = Math.floor(rand() * LINE_COLS.length);
+    lines.push({ x: x + w/2, w, color: LINE_COLS[ci] });
+    x += w + gap * (0.3 + rand() * 1.5);
+  }
+  return lines;
+}
+
+// ── 배경 그리기 ───────────────────────────
+function drawBg(ctx, W, H, bgType) {
+  if (bgType === 'white') {
+    ctx.fillStyle = C.white; ctx.fillRect(0,0,W,H);
+  } else if (bgType === 'green') {
+    ctx.fillStyle = C.green; ctx.fillRect(0,0,W,H);
+  } else {
+    const g = ctx.createLinearGradient(0,0,W,0);
+    g.addColorStop(0,    C.navy2);
+    g.addColorStop(0.15, C.purple);
+    g.addColorStop(0.38, C.blue);
+    g.addColorStop(0.62, C.green);
+    g.addColorStop(0.82, C.navy1);
+    g.addColorStop(1,    C.navy2);
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  }
+}
+
+// ── 패턴 그리기 ───────────────────────────
+function drawPattern(id, weights, gap, bgType, seed) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  drawBg(ctx, W, H, bgType);
+  const lines = makeLines(W, weights, gap, seed);
+  lines.forEach(l => {
+    let col = l.color;
+    if (bgType === 'white'  && (col === C.white || col === C.navy1)) col = C.navy2;
+    if (bgType === 'green'  && col === C.green) col = C.white;
+    ctx.fillStyle = col;
+    ctx.fillRect(Math.round(l.x - l.w/2), 0, Math.ceil(l.w), H);
+  });
+}
+
+// ── 굵기 세트 ─────────────────────────────
+const W5 = [1, 2, 5, 12, 28];
+const W8 = [0.5, 1, 1.5, 2.5, 4, 7, 13, 22, 36, 52];
+
+const DENSE  = 2;
+const NORMAL = 7;
+const LOOSE  = 18;
+
+// ── 섹션 데이터 ───────────────────────────
+const SECTIONS = [
+  { id:'A', label:'5 Weight Levels', sub:'Dense · 촘촘',   weights:W5, gap:DENSE,  seed:1001 },
+  { id:'B', label:'5 Weight Levels', sub:'Normal · 보통',  weights:W5, gap:NORMAL, seed:2001 },
+  { id:'C', label:'5 Weight Levels', sub:'Loose · 여유',   weights:W5, gap:LOOSE,  seed:3001 },
+  { id:'D', label:'Multi Weight 8+', sub:'Dense · 촘촘',   weights:W8, gap:DENSE,  seed:4001 },
+  { id:'E', label:'Multi Weight 8+', sub:'Normal · 보통',  weights:W8, gap:NORMAL, seed:5001 },
+  { id:'F', label:'Multi Weight 8+', sub:'Loose · 여유',   weights:W8, gap:LOOSE,  seed:6001 },
+];
+
+const BG_TYPES = [
+  { key:'white',  label:'BG · White #FFFFFF',   cls:'bg-white' },
+  { key:'green',  label:'BG · Green #00C85F',   cls:'bg-green' },
+  { key:'shift',  label:'BG · Color Shift',     cls:'bg-shift' },
+];
+
+// ── DOM 생성 ──────────────────────────────
+const body = document.body;
+
+SECTIONS.forEach(sec => {
+  const section = document.createElement('div');
+  section.className = 'section';
+
+  // Section header
+  section.innerHTML = `
+    <div class="section-header">
+      <div class="section-id">${sec.id}</div>
+      <div class="section-title">${sec.label} · ${sec.sub}</div>
+    </div>
+    <div class="section-divider"></div>
+    <div class="fixed-vars">
+      <div class="var-chip highlight">Weight: ${sec.weights.join(' / ')} px</div>
+      <div class="var-chip highlight">Gap base: ${sec.gap}px</div>
+      <div class="var-chip">Variable → Background (3종)</div>
+    </div>
+  `;
+
+  const cards = document.createElement('div');
+  cards.className = 'cards';
+
+  BG_TYPES.forEach((bg, bi) => {
+    const cid = `${sec.id}${bi+1}`;
+    const bgTypeKey = bg.key === 'shift' ? 'colorshift' : bg.key;
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-meta">
+        <div class="card-id">${cid}</div>
+        <div class="card-diff ${bg.cls}">${bg.label}</div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="${cid}" width="1200" height="675"></canvas>
+        <div class="canvas-overlay">
+          <div class="ov-item">Weight<span>${sec.weights.length}단계</span></div>
+          <div class="ov-divider"></div>
+          <div class="ov-item">Gap<span>${sec.gap}px</span></div>
+          <div class="ov-divider"></div>
+          <div class="ov-item">BG<span>${bg.label.replace('BG · ','')}</span></div>
+          <div class="ov-divider"></div>
+          <div class="ov-item">Seed<span>${sec.seed}</span></div>
+        </div>
+      </div>
+    `;
+    cards.appendChild(card);
+
+    // Draw after DOM inserted
+    setTimeout(() => drawPattern(cid, sec.weights, sec.gap, bgTypeKey, sec.seed), 0);
+  });
+
+  section.appendChild(cards);
+  body.appendChild(section);
+});
+</script>
+</body>
+</html>
