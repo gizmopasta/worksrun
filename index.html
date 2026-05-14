@@ -175,10 +175,10 @@
       <h1 style="margin-bottom:10px;">Study Composition</h1>
       <ul class="order-list">
         <li><span class="key">버전</span><span class="val confirm">v8 · 9개 시안 (T2/T3/T3b × 배경 3종)</span></li>
-        <li><span class="key">T2 · Chaos</span><span class="val">완전 랜덤 / 점보 1개(30~35%) Blue or Green / 차순위 68% / 6색 보장</span></li>
-        <li><span class="key">T3 · Focal</span><span class="val">중앙 굵고 양끝 얇아짐 / 간극 축소 / 점보 1개 Blue or Green / 차순위 68% / 6색 보장</span></li>
-        <li><span class="key">T3b · Anti-Focal</span><span class="val">T3 완전 반대 — 외곽 굵고 중앙 얇아짐 / 동일 선 개수 / 점보 1개 Blue or Green / 6색 보장</span></li>
-        <li><span class="key">공통 규칙</span><span class="val confirm">점보 1개 Blue/Green 고정 · 차순위 점보 68% · 6색 전부 보장 · Glow 없음</span></li>
+        <li><span class="key">T2 · Chaos</span><span class="val">완전 랜덤 / 얇은 선 밀도 2배 / 점보 1개 Blue or Green / 차순위 68% / 6색 보장</span></li>
+        <li><span class="key">T3 · Focal</span><span class="val">중앙 굵고 양끝 얇아짐 / 중간 굵기 선 보강 / 점보 Blue or Green / 6색 보장</span></li>
+        <li><span class="key">T3b · Anti-Focal</span><span class="val">양끝 밀집·굵음 / 중앙 드문드문·얇음 / gap 위치 기반 제어 / 점보 Blue or Green / 6색 보장</span></li>
+        <li><span class="key">공통 규칙</span><span class="val confirm">점보 1개 Blue/Green · 차순위 68% · 6색 전부 보장 · Glow 없음</span></li>
         <li><span class="key">배경 변수</span><span class="val">White #FFFFFF / Navy2 #202936 / Green #00C85F</span></li>
       </ul>
     </div>
@@ -340,23 +340,25 @@ function injectJumboLines(lines, W, seed) {
 }
 
 // ── TYPE 2: CHAOS ──────────────────────────
+// 얇은 선 2배 밀도
 function makeChaos(W, seed) {
   const rand = mkRand(seed);
+  const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
   const lines = [];
   let x = 0;
   while (x < W + 200) {
     const w = 0.5 + Math.pow(rand(), 3) * 80;
-    const ci = Math.floor(rand() * 6);
-    const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
+    const ci = Math.floor(rand() * cols.length);
     lines.push({ x: x + w/2, w, color: cols[ci] });
-    x += w + rand() * 30;
+    // gap 절반으로 줄여서 밀도 2배
+    x += w + rand() * 14;
   }
   injectJumboLines(lines, W, seed);
   return ensureAllColors(lines, mkRand(seed + 1));
 }
 
 // ── TYPE 3: FOCAL ──────────────────────────
-// 중앙 굵고 양끝 얇아짐 / 간극 줄임
+// 중앙 굵고 양끝 얇아짐 / 중간 굵기 선 보강
 function makeFocal(W, seed) {
   const rand = mkRand(seed);
   const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
@@ -364,11 +366,12 @@ function makeFocal(W, seed) {
   let x = 0;
   while (x < W + 60) {
     const dist = Math.min(1, Math.abs((x / W) - 0.5) * 2);
-    const maxW = Math.max(0, 300 * (1 - Math.pow(dist, 0.8)));
-    const w = Math.max(0.5, 0.5 + Math.pow(1 - rand(), 2.0) * maxW);
+    // 중간 굵기 보강: 선형 + 지수 혼합
+    const maxW = Math.max(0, 280 * (1 - Math.pow(dist, 1.2)));
+    // 중간값 많이 나오도록 rand 거듭제곱 낮춤
+    const w = Math.max(0.5, 0.5 + Math.pow(1 - rand(), 1.4) * maxW);
     const ci = Math.floor(rand() * cols.length);
     lines.push({ x: x + w/2, w, color: cols[ci] });
-    // 간극 줄임: gap 최소화
     x += w + 0.5 + rand() * 3;
   }
   injectJumboLines(lines, W, seed);
@@ -377,8 +380,9 @@ function makeFocal(W, seed) {
 
 // ── TYPE 3b: ANTI-FOCAL ────────────────────
 // T3 완전 반대:
-// 외곽(양끝): 점보 선 + 두꺼운 선 많음
-// 중앙: 얇은 선 다수 (T3의 중앙 굵기 분포를 외곽에 그대로 적용)
+// - 선 밀도: 양끝에 밀집, 중앙은 드문드문
+// - 굵기: 양끝 굵은 선 많고, 중앙 얇은 선만
+// gap을 위치 기반으로 제어 — 중앙일수록 gap 넓어짐
 function makeAntiFocal(W, seed) {
   const rand = mkRand(seed);
   const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
@@ -386,18 +390,20 @@ function makeAntiFocal(W, seed) {
   let x = 0;
   while (x < W + 60) {
     const dist = Math.min(1, Math.abs((x / W) - 0.5) * 2);
-    // T3와 동일한 공식, dist만 반전 (1-dist)
-    const maxW = Math.max(0, 300 * (1 - Math.pow(1 - dist, 0.8)));
-    const w = Math.max(0.5, 0.5 + Math.pow(1 - rand(), 2.0) * maxW);
+    // 굵기: 끝(dist=1)은 굵고, 중앙(dist=0)은 얇음
+    const maxW = Math.max(0, 280 * Math.pow(dist, 1.2));
+    const w = Math.max(0.5, 0.5 + Math.pow(1 - rand(), 1.4) * maxW);
     const ci = Math.floor(rand() * cols.length);
     lines.push({ x: x + w/2, w, color: cols[ci] });
-    x += w + 0.5 + rand() * 3;
+    // 밀도: 끝(dist=1)은 촘촘(gap 작음), 중앙(dist=0)은 드문(gap 큼)
+    const gap = 0.5 + (1 - dist) * 30 + rand() * 4;
+    x += w + gap;
   }
   injectJumboLines(lines, W, seed);
   return ensureAllColors(lines, mkRand(seed + 1));
 }
 
-// ── 섹션 정의 (T1 제외) ───────────────────────────────
+// ── 섹션 정의 (T1 제외) ───────────────────────────────────
 const TYPES = [
   {
     id: '2', name: 'Chaos',
