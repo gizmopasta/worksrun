@@ -6,7 +6,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NAVER WORKS — Pattern Study v7</title>
+<title>NAVER WORKS — Pattern Study v8</title>
 <style>
   :root {
     --green:  #00C85F;
@@ -154,7 +154,7 @@
 <div class="top-header">
   <div>
     <h1>Full Order Brief</h1>
-    <div class="version-tag">v7 · Type Study — T2/T3/T3b 주력 + T5</div>
+    <div class="version-tag">v8 · T2 / T3 / T3b × 배경 3종</div>
     <ul class="order-list">
       <li><span class="key">Project</span><span class="val confirm">NAVER WORKS 마라톤 행사</span></li>
       <li><span class="key">Output</span><span class="val confirm">SVG (프레임 캡처) + Lottie JSON (모션)</span></li>
@@ -174,14 +174,13 @@
     <div style="margin-top:28px;">
       <h1 style="margin-bottom:10px;">Study Composition</h1>
       <ul class="order-list">
-        <li><span class="key">버전</span><span class="val confirm">v7 · 12개 시안 (T2/T3/T3b/T5 × 배경 3종)</span></li>
-        <li><span class="key">주력 테스트</span><span class="val confirm">T2 · T3 · T3b</span></li>
-        <li><span class="key">T2 · Chaos</span><span class="val">Width 0.5~120px 완전 랜덤 / Gap 0~40px / 점보 선 20~30% 보장 / 6색 균등</span></li>
-        <li><span class="key">T3 · Focal</span><span class="val">중앙 굵고 양끝 얇아짐 / 중앙 max 420px / 점보 선 20~30% 보장 / 6색 균등</span></li>
-        <li><span class="key">T3b · Anti-Focal</span><span class="val">가운데 얇고 외곽 굵어짐 / T3 반대 구조 / 점보 선 20~30% 보장 / 6색 균등</span></li>
-        <li><span class="key">T5 · Minimal</span><span class="val">극얇 78% / 극굵 40~200px 22% / 6색 완전 랜덤 믹스</span></li>
+        <li><span class="key">버전</span><span class="val confirm">v8 · 9개 시안 (T2/T3/T3b × 배경 3종)</span></li>
+        <li><span class="key">T2 · Chaos</span><span class="val">Width 0.5~120px 완전 랜덤 / Gap 0~40px / 점보 선 1개 30%+ 보장 / 6색 균등</span></li>
+        <li><span class="key">T3 · Focal</span><span class="val">중앙 굵고 양끝 얇아짐 / 중앙 max 420px / 점보 선 30%+ 보장 / 6색 균등</span></li>
+        <li><span class="key">T3b · Anti-Focal</span><span class="val">외곽 굵고 가운데 얇아짐 / T3 완전 반대 / 점보 선 30%+ 보장 / 6색 균등</span></li>
         <li><span class="key">T4 · Breath</span><span class="val confirm">제외</span></li>
-        <li><span class="key">공통 규칙</span><span class="val">점보 선 1개 20~30% / 6색 전부 보장 / Glow 없음</span></li>
+        <li><span class="key">T5 · Minimal</span><span class="val confirm">제외</span></li>
+        <li><span class="key">공통 규칙</span><span class="val">점보 선 1개 30%+ / 6색 전부 보장 / Glow 없음 / 16:9</span></li>
         <li><span class="key">배경 변수</span><span class="val">White #FFFFFF / Navy2 #202936 / Green #00C85F</span></li>
       </ul>
     </div>
@@ -214,7 +213,7 @@
       <div class="step-num">04</div>
       <div class="step-content">
         <div class="step-title">정적 그래픽 구조 탐색 <span class="now-badge">NOW</span></div>
-        <div class="step-sub">T2/T3/T3b/T5 × 배경 3종 — 12개 시안 비교</div>
+        <div class="step-sub">T2 / T3 / T3b × 배경 3종 — 9개 시안 비교</div>
       </div>
     </div>
     <div class="process-step">
@@ -295,12 +294,11 @@ function ensureAllColors(lines, rand) {
   return lines;
 }
 
-// ── 20~30% 점보 선 1개 보장 ───────────────
+// ── 30%+ 점보 선 1개 보장 ─────────────────
 function injectJumboLine(lines, W, rand) {
-  const jumboW = W * (0.20 + rand() * 0.10); // 20~30%
-  const x = W * (0.15 + rand() * 0.70); // 양끝 피해서
+  const jumboW = W * (0.30 + rand() * 0.10); // 30~40%
+  const x = W * (0.25 + rand() * 0.50);
   const ci = Math.floor(rand() * LINE_COLS.length);
-  // 기존 선 중 가장 굵은 것을 점보로 교체
   let maxIdx = 0;
   lines.forEach((l, i) => { if (l.w > lines[maxIdx].w) maxIdx = i; });
   lines[maxIdx] = { x, w: jumboW, color: LINE_COLS[ci] };
@@ -308,6 +306,7 @@ function injectJumboLine(lines, W, rand) {
 }
 
 // ── TYPE 2: CHAOS ──────────────────────────
+// 완전 랜덤 + 점보 선 1개 30%+ 보장
 function makeChaos(W, seed) {
   const rand = mkRand(seed);
   const lines = [];
@@ -323,6 +322,7 @@ function makeChaos(W, seed) {
 }
 
 // ── TYPE 3: FOCAL ──────────────────────────
+// 중앙 굵고 양끝 얇아짐 + 점보 선 1개 보장
 function makeFocal(W, seed) {
   const rand = mkRand(seed);
   const lines = [];
@@ -340,16 +340,17 @@ function makeFocal(W, seed) {
 }
 
 // ── TYPE 3b: ANTI-FOCAL ────────────────────
-// 가운데 얇고 외곽 굵어짐 (T3 반대)
+// 외곽에 굵은 선 많고 가운데로 갈수록 얇은 선 많아짐
+// 양끝 max 420px → 중앙 min 0.5px
 function makeAntiFocal(W, seed) {
   const rand = mkRand(seed);
   const lines = [];
   let x = 0;
   while (x < W + 120) {
     const dist = Math.min(1, Math.abs((x / W) - 0.5) * 2);
-    // dist가 클수록(끝단) 굵어짐
-    const maxW = Math.max(0, 420 * Math.pow(dist, 0.6));
-    const w = Math.max(0.5, 0.5 + Math.pow(1 - rand(), 2.5) * maxW);
+    // dist 0=중앙(얇음), 1=끝(굵음)
+    const maxW = Math.max(0, 420 * Math.pow(dist, 0.5));
+    const w = Math.max(0.5, 0.5 + Math.pow(rand(), 0.4) * maxW);
     const ci = Math.floor(rand() * LINE_COLS.length);
     lines.push({ x: x + w/2, w, color: LINE_COLS[ci] });
     x += w + 1 + rand() * 6;
@@ -358,59 +359,25 @@ function makeAntiFocal(W, seed) {
   return ensureAllColors(lines, rand);
 }
 
-// ── TYPE 5: MINIMAL ────────────────────────
-// 6색 완전 랜덤 믹스 — 균일함 제거
-function makeMinimal(W, seed) {
-  const rand = mkRand(seed);
-  const lines = [];
-  let x = 8;
-  // 6색을 완전 셔플해서 순서 보장
-  const colorPool = [];
-  while (colorPool.length < 30) {
-    const shuffled = [...LINE_COLS].sort(() => rand() - 0.5);
-    colorPool.push(...shuffled);
-  }
-  let ci = 0;
-  while (x < W - 8) {
-    const r = rand();
-    const w = r < 0.78
-      ? 0.5 + rand() * 2
-      : 40 + rand() * 160;
-    // 컬러: 풀에서 순서대로 — 완전 랜덤 간격으로 건너뜀
-    const colorIdx = (ci + Math.floor(rand() * 3)) % colorPool.length;
-    ci = (colorIdx + 1) % colorPool.length;
-    lines.push({ x: x + w/2, w, color: colorPool[colorIdx] });
-    x += w + 6 + rand() * 60;
-  }
-  injectJumboLine(lines, W, rand);
-  return ensureAllColors(lines, rand);
-}
-
-// ── 섹션 정의 (T1 제외) ───────────────────────
+// ── 섹션 정의 (T1 제외) ───────────────────────────
 const TYPES = [
   {
     id: '2', name: 'Chaos',
-    concept: '<strong>완전 랜덤</strong> — 굵기·간격 완전 랜덤. 점보 선 1개(20~30%) 보장. 6색 균등.',
-    chips: ['Width: 0.5~120px 랜덤', 'Gap: 0~40px 랜덤', '점보 선 20~30% 보장', '6색 균등'],
+    concept: '<strong>완전 랜덤</strong> — 굵기·간격 완전 랜덤. 점보 선 1개 30%+ 보장. 6색 균등.',
+    chips: ['Width: 0.5~120px 완전 랜덤', 'Gap: 0~40px 완전 랜덤', '점보 선 1개 30%+ 보장', '6색 균등'],
     makeFn: makeChaos, seed: 2001
   },
   {
     id: '3', name: 'Focal',
-    concept: '<strong>중앙 집중</strong> — 중앙 굵고 양끝 얇아짐. 점보 선 1개(20~30%) 보장.',
-    chips: ['중앙 Max: 420px', '끝단 Min: 0.5px', '점보 선 20~30% 보장', '6색 균등'],
+    concept: '<strong>중앙 집중</strong> — 중앙 굵고 양끝으로 갈수록 극단적으로 얇아짐. 점보 선 보장.',
+    chips: ['중앙 Max: 420px', '양끝 Min: 0.5px', '점보 선 1개 30%+ 보장', '6색 균등'],
     makeFn: makeFocal, seed: 3001
   },
   {
     id: '3b', name: 'Anti-Focal',
-    concept: '<strong>외곽 집중</strong> — 가운데 얇고 양끝 굵어짐. T3의 반대 구조.',
-    chips: ['끝단 Max: 420px', '중앙 Min: 0.5px', '점보 선 20~30% 보장', '6색 균등'],
+    concept: '<strong>외곽 집중</strong> — 외곽에 굵은 선 많고 가운데로 갈수록 얇은 선 많아짐. T3 완전 반대.',
+    chips: ['외곽 Max: 420px', '중앙 Min: 0.5px', '점보 선 1개 30%+ 보장', '6색 균등'],
     makeFn: makeAntiFocal, seed: 7001
-  },
-  {
-    id: '5', name: 'Minimal',
-    concept: '<strong>극단적 여백</strong> — 극얇 78% + 극굵 22%. 6색 완전 랜덤 믹스.',
-    chips: ['얇은 선: 0.5~2px (78%)', '굵은 선: 40~200px (22%)', '점보 선 20~30% 보장', '6색 랜덤 믹스'],
-    makeFn: makeMinimal, seed: 5001
   },
 ];
 
