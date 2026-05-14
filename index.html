@@ -166,7 +166,7 @@
       <li><span class="key">Glow</span><span class="val confirm">없음 (선명하게)</span></li>
       <li><span class="key">Line colors</span><span class="val confirm">WORKS 6색 랜덤 변화</span></li>
       <li><span class="key">End frame</span><span class="val confirm">WORKS Green #00C85F 로 마무리</span></li>
-      <li><span class="key">BG</span><span class="val">White / Navy2 / Green — 비교 중</span></li>
+      <li><span class="key">BG</span><span class="val confirm">White #FFFFFF / Navy2 #202936</span></li>
       <li><span class="key">Motion</span><span class="val">그래픽 확정 후 결정</span></li>
       <li><span class="key">Duration</span><span class="val">그래픽 확정 후 결정</span></li>
     </ul>
@@ -174,14 +174,14 @@
     <div style="margin-top:28px;">
       <h1 style="margin-bottom:10px;">Study Composition</h1>
       <ul class="order-list">
-        <li><span class="key">버전</span><span class="val confirm">v9 · 15개 시안 (T2/T3/T3b/T4a/T4b × 배경 3종)</span></li>
+        <li><span class="key">버전</span><span class="val confirm">v9 · 10개 시안 (T2/T3/T3b/T4a/T4b × 배경 2종)</span></li>
         <li><span class="key">T2 · Chaos</span><span class="val">완전 랜덤 / 양쪽 외곽 얇은 선 밀도 증가 / 점보 30~35% Blue/Green / 6색 균등</span></li>
         <li><span class="key">T3 · Focal</span><span class="val">중앙 굵고 양끝 얇아짐 / 차순위 = 1순위 50% / 점보 Blue/Green / 6색 균등</span></li>
         <li><span class="key">T3b · Anti-Focal</span><span class="val">양끝 밀집·굵음 / 중앙 얇은 선 2배 밀도 / 점보 Blue/Green / 6색 균등</span></li>
         <li><span class="key">T4a · L→R</span><span class="val">좌 얇고 촘촘 → 우 굵고 드문 → 맨 우측 점보 30% Blue/Green</span></li>
         <li><span class="key">T4b · R→L</span><span class="val">우 얇고 촘촘 → 좌 굵고 드문 → 맨 좌측 점보 30% Blue/Green</span></li>
         <li><span class="key">공통 규칙</span><span class="val confirm">점보 1개 Blue/Green · 차순위 68%(T4 제외) · 6색 전부 보장 · Glow 없음</span></li>
-        <li><span class="key">배경 변수</span><span class="val">White #FFFFFF / Navy2 #202936 / Green #00C85F</span></li>
+        <li><span class="key">배경 변수</span><span class="val confirm">White #FFFFFF / Navy2 #202936</span></li>
       </ul>
     </div>
   </div>
@@ -349,6 +349,24 @@ function injectJumboCenter(lines, W, seed, secondRatio) {
   return lines;
 }
 
+// ── 점보 선 엣지 주입 (T4a/T4b용) ──────────
+// 점보가 캔버스 가장자리에 딱 붙어서 시작
+function injectJumboEdge(lines, W, seed, pos, ratio) {
+  ratio = ratio || 0.30;
+  const rand = mkRand(seed + 77777);
+  const jumboW  = W * ratio;
+  const secondW = jumboW * 0.68;
+  const jumboCols = [C.blue, C.green];
+  const jumboCol  = jumboCols[Math.floor(rand() * 2)];
+  const secondCol = jumboCol === C.blue ? C.green : C.blue;
+  // 가장자리에 딱 붙음: 절반이 캔버스 안에 들어오게
+  const jumboX = pos === 0 ? jumboW / 2 : W - jumboW / 2;
+  const sorted = lines.map((l,i) => ({...l, i})).sort((a,b) => b.w - a.w);
+  lines[sorted[0].i] = { x: jumboX, w: jumboW, color: jumboCol };
+  if (sorted[1]) lines[sorted[1].i] = { ...lines[sorted[1].i], w: secondW, color: secondCol };
+  return lines;
+}
+
 // ── TYPE 2: CHAOS ──────────────────────────
 // 양쪽 외곽에 얇은 선 추가
 function makeChaos(W, seed) {
@@ -429,7 +447,7 @@ function makeL2R(W, seed) {
     const gap = 0.5 + t * 28 + rand() * 4;
     x += w + gap;
   }
-  injectJumbo(lines, W, seed, 1, 0.30);
+  injectJumboEdge(lines, W, seed, 1, 0.30);
   return ensureAllColors(lines, mkRand(seed + 1));
 }
 
@@ -449,7 +467,7 @@ function makeR2L(W, seed) {
     const gap = 0.5 + (1 - t) * 28 + rand() * 4;
     x += w + gap;
   }
-  injectJumbo(lines, W, seed, 0, 0.30);
+  injectJumboEdge(lines, W, seed, 0, 0.30);
   return ensureAllColors(lines, mkRand(seed + 1));
 }
 
@@ -490,7 +508,6 @@ const TYPES = [
 const BGS = [
   { key:'white', label:'BG · White #FFFFFF',   cls:'bg-white' },
   { key:'navy',  label:'BG · Navy2 #202936',   cls:'bg-navy'  },
-  { key:'green', label:'BG · Green #00C85F',   cls:'bg-green' },
 ];
 
 // ── DOM 생성 먼저, 렌더링은 나중에 ──────────
