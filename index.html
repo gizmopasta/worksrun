@@ -317,12 +317,14 @@ function makeFocal(W, seed) {
   const lines = [];
   let x = 0;
   while (x < W + 120) {
-    const dist = Math.abs((x / W) - 0.5) * 2;
-    const maxW = 480 * (1 - Math.pow(dist, 0.7)); // 120 → 480 (4배)
-    const w = 0.5 + Math.pow(1 - rand(), 2.5) * maxW;
+    const dist = Math.abs((x / W) - 0.5) * 2; // 0=중앙, 1=끝
+    const maxW = 480 * (1 - Math.pow(dist, 0.7));
+    // 최소 굵기 1px 보장 → 무한루프 방지
+    const w = Math.max(1, Math.pow(1 - rand(), 2.5) * maxW);
     const ci = Math.floor(rand() * LINE_COLS.length);
     lines.push({ x: x + w/2, w, color: LINE_COLS[ci] });
-    x += w + 1 + rand() * 6;
+    // 최소 이동거리 2px 보장
+    x += w + Math.max(2, rand() * 6);
   }
   return ensureAllColors(lines, rand);
 }
