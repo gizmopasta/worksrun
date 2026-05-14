@@ -6,7 +6,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NAVER WORKS — Pattern Study v9</title>
+<title>NAVER WORKS — Pattern Study v10</title>
 <style>
   :root {
     --green:  #00C85F;
@@ -166,7 +166,7 @@
       <li><span class="key">Glow</span><span class="val confirm">없음 (선명하게)</span></li>
       <li><span class="key">Line colors</span><span class="val confirm">WORKS 6색 랜덤 변화</span></li>
       <li><span class="key">End frame</span><span class="val confirm">WORKS Green #00C85F 로 마무리</span></li>
-      <li><span class="key">BG</span><span class="val confirm">White #FFFFFF / Navy2 #202936</span></li>
+      <li><span class="key">BG</span><span class="val">White / Navy2 / Green — 비교 중</span></li>
       <li><span class="key">Motion</span><span class="val">그래픽 확정 후 결정</span></li>
       <li><span class="key">Duration</span><span class="val">그래픽 확정 후 결정</span></li>
     </ul>
@@ -174,15 +174,15 @@
     <div style="margin-top:28px;">
       <h1 style="margin-bottom:10px;">Study Composition</h1>
       <ul class="order-list">
-        <li><span class="key">버전</span><span class="val confirm">v9 · 10개 시안 (T2/T3/T3b/T4a/T4b × 배경 2종)</span></li>
-        <li><span class="key">T2 · Chaos</span><span class="val">완전 랜덤 / 양끝 외곽 얇은 선 밀도 증가 / 점보 30~35% Blue/Green 보장 / 6색 균등</span></li>
-        <li><span class="key">T3 · Focal</span><span class="val">중앙 굵고 양끝 얇아짐 / 차순위 = 1순위 50% / 점보 Blue/Green / 6색 균등</span></li>
+        <li><span class="key">버전</span><span class="val confirm">v10 · 10개 시안 (T2/T3/T3b/T4a/T4b × 배경 2종)</span></li>
+        <li><span class="key">T2 · Chaos</span><span class="val">완전 랜덤 / 점보 30~35% Blue/Green / 6색 균등</span></li>
+        <li><span class="key">T3 · Focal</span><span class="val">중앙 굵고 양끝 얇아짐 / 점보 Blue/Green / 6색 균등</span></li>
         <li><span class="key">T3b · Anti-Focal</span><span class="val">양끝 밀집·굵음 / 중앙 얇은 선 2배 밀도 / 점보 Blue/Green / 6색 균등</span></li>
         <li><span class="key">T4a · L→R</span><span class="val">좌 얇고 촘촘 → 우 굵고 드문 → 맨 우측 가장자리 점보 40% Blue/Green</span></li>
         <li><span class="key">T4b · R→L</span><span class="val">우 얇고 촘촘 → 좌 굵고 드문 → 맨 좌측 가장자리 점보 40% Blue/Green</span></li>
         <li><span class="key">공통 규칙</span><span class="val confirm">점보 1개 Blue/Green · 차순위 68% · 6색 전부 보장 · Glow 없음 · 16:9</span></li>
         <li><span class="key">배경 변수</span><span class="val confirm">White #FFFFFF / Navy2 #202936</span></li>
-        <li><span class="key">최근 오더</span><span class="val">T2 점보 보장 확인 ✓ / T4a·T4b 점보 30%→40% / Green 배경 제거</span></li>
+        <li><span class="key">최근 오더</span><span class="val">T3b 최신 유지 / T2·T3 원복 / T4 가장자리 점보 40% / Green 배경 제거</span></li>
       </ul>
     </div>
   </div>
@@ -317,30 +317,32 @@ function ensureAllColors(lines, rand) {
 }
 
 // ── 점보 선 주입 (위치 지정) ──────────────
-// pos: 0=왼쪽, 1=오른쪽 / ratio: 점보 너비 비율
-function injectJumbo(lines, W, seed, pos, ratio) {
-  ratio = ratio || 0.32;
+// pos: 0=왼쪽, 1=오른쪽
+function injectJumbo(lines, W, seed, pos) {
   const rand = mkRand(seed + 77777);
-  const jumboW  = W * ratio;
+  const jumboW  = W * (0.30 + rand() * 0.05);
   const secondW = jumboW * 0.68;
   const jumboCols = [C.blue, C.green];
   const jumboCol  = jumboCols[Math.floor(rand() * 2)];
   const secondCol = jumboCol === C.blue ? C.green : C.blue;
+
+  // 점보 위치: pos=0이면 좌측, pos=1이면 우측
   const jumboX = pos === 0
     ? jumboW / 2 + W * 0.02
     : W - jumboW / 2 - W * 0.02;
+
+  // 가장 굵은 2개 교체
   const sorted = lines.map((l,i) => ({...l, i})).sort((a,b) => b.w - a.w);
   lines[sorted[0].i] = { x: jumboX, w: jumboW, color: jumboCol };
   if (sorted[1]) lines[sorted[1].i] = { ...lines[sorted[1].i], w: secondW, color: secondCol };
   return lines;
 }
 
-// ── 중앙 점보 주입 / secondRatio 파라미터
-function injectJumboCenter(lines, W, seed, secondRatio) {
-  secondRatio = secondRatio || 0.68;
+// ── 중앙 점보 주입 (T2/T3/T3b용) ──────────
+function injectJumboCenter(lines, W, seed) {
   const rand = mkRand(seed + 77777);
   const jumboW  = W * (0.30 + rand() * 0.05);
-  const secondW = jumboW * secondRatio;
+  const secondW = jumboW * 0.68;
   const jumboCols = [C.blue, C.green];
   const jumboCol  = jumboCols[Math.floor(rand() * 2)];
   const secondCol = jumboCol === C.blue ? C.green : C.blue;
@@ -351,16 +353,14 @@ function injectJumboCenter(lines, W, seed, secondRatio) {
 }
 
 // ── 점보 선 엣지 주입 (T4a/T4b용) ──────────
-// 점보가 캔버스 가장자리에 딱 붙어서 시작
 function injectJumboEdge(lines, W, seed, pos, ratio) {
-  ratio = ratio || 0.30;
+  ratio = ratio || 0.40;
   const rand = mkRand(seed + 77777);
   const jumboW  = W * ratio;
   const secondW = jumboW * 0.68;
   const jumboCols = [C.blue, C.green];
   const jumboCol  = jumboCols[Math.floor(rand() * 2)];
   const secondCol = jumboCol === C.blue ? C.green : C.blue;
-  // 가장자리에 딱 붙음: 절반이 캔버스 안에 들어오게
   const jumboX = pos === 0 ? jumboW / 2 : W - jumboW / 2;
   const sorted = lines.map((l,i) => ({...l, i})).sort((a,b) => b.w - a.w);
   lines[sorted[0].i] = { x: jumboX, w: jumboW, color: jumboCol };
@@ -369,30 +369,22 @@ function injectJumboEdge(lines, W, seed, pos, ratio) {
 }
 
 // ── TYPE 2: CHAOS ──────────────────────────
-// 양쪽 외곽에 얇은 선 추가
 function makeChaos(W, seed) {
   const rand = mkRand(seed);
   const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
   const lines = [];
   let x = 0;
   while (x < W + 200) {
-    const t = Math.min(1, x / W);
-    // 외곽(양끝)일수록 얇은 선 편향 강화, gap 줄임
-    const edgeFactor = Math.abs(t - 0.5) * 2; // 0=중앙, 1=끝
-    const w = 0.5 + Math.pow(rand(), 2.0 + edgeFactor * 2) * 120;
-    const gap = edgeFactor > 0.5
-      ? rand() * 8   // 외곽: 촘촘
-      : rand() * 40; // 중앙: 기존
+    const w = 0.5 + Math.pow(rand(), 3) * 120;
     const ci = Math.floor(rand() * cols.length);
     lines.push({ x: x + w/2, w, color: cols[ci] });
-    x += w + gap;
+    x += w + rand() * 40;
   }
   injectJumboCenter(lines, W, seed);
   return ensureAllColors(lines, mkRand(seed + 1));
 }
 
 // ── TYPE 3: FOCAL ──────────────────────────
-// 차순위 = 1순위의 50%
 function makeFocal(W, seed) {
   const rand = mkRand(seed);
   const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
@@ -406,8 +398,7 @@ function makeFocal(W, seed) {
     lines.push({ x: x + w/2, w, color: cols[ci] });
     x += w + 0.5 + rand() * 3;
   }
-  // 차순위 50%로 변경
-  injectJumboCenter(lines, W, seed, 0.50);
+  injectJumboCenter(lines, W, seed);
   return ensureAllColors(lines, mkRand(seed + 1));
 }
 
@@ -433,46 +424,52 @@ function makeAntiFocal(W, seed) {
 }
 
 // ── TYPE 4a: LEFT→RIGHT ────────────────────
-// 맨 우측 점보 30%
+// 좌: 얇은 선 촘촘 → 우로 갈수록 굵고 드문 → 맨 우측 점보
 function makeL2R(W, seed) {
   const rand = mkRand(seed);
   const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
   const lines = [];
   let x = 0;
   while (x < W + 60) {
-    const t = Math.min(1, x / W);
+    const t = Math.min(1, x / W); // 0=좌, 1=우
+    // 굵기: 좌 얇음 → 우 굵음
     const maxW = Math.max(0, 200 * Math.pow(t, 1.5));
     const w = Math.max(0.5, 0.5 + Math.pow(1 - rand(), 1.8) * maxW);
     const ci = Math.floor(rand() * cols.length);
     lines.push({ x: x + w/2, w, color: cols[ci] });
+    // 간격: 좌 촘촘(gap 작음) → 우 드문(gap 큼)
     const gap = 0.5 + t * 28 + rand() * 4;
     x += w + gap;
   }
+  // 점보: 맨 우측
   injectJumboEdge(lines, W, seed, 1, 0.40);
   return ensureAllColors(lines, mkRand(seed + 1));
 }
 
 // ── TYPE 4b: RIGHT→LEFT ────────────────────
-// 맨 좌측 점보 30%
+// 우: 얇은 선 촘촘 → 좌로 갈수록 굵고 드문 → 맨 좌측 점보
 function makeR2L(W, seed) {
   const rand = mkRand(seed);
   const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
   const lines = [];
   let x = 0;
   while (x < W + 60) {
-    const t = Math.min(1, x / W);
+    const t = Math.min(1, x / W); // 0=좌, 1=우
+    // 굵기: 좌 굵음 → 우 얇음 (4a 반대)
     const maxW = Math.max(0, 200 * Math.pow(1 - t, 1.5));
     const w = Math.max(0.5, 0.5 + Math.pow(1 - rand(), 1.8) * maxW);
     const ci = Math.floor(rand() * cols.length);
     lines.push({ x: x + w/2, w, color: cols[ci] });
+    // 간격: 좌 드문 → 우 촘촘 (4a 반대)
     const gap = 0.5 + (1 - t) * 28 + rand() * 4;
     x += w + gap;
   }
+  // 점보: 맨 좌측
   injectJumboEdge(lines, W, seed, 0, 0.40);
   return ensureAllColors(lines, mkRand(seed + 1));
 }
 
-// ── 섹션 정의 (T1 제외) ───────────────────────────────────────
+// ── 섹션 정의 (T1 제외) ───────────────────────────────────
 const TYPES = [
   {
     id: '2', name: 'Chaos',
@@ -507,8 +504,8 @@ const TYPES = [
 ];
 
 const BGS = [
-  { key:'white', label:'BG · White #FFFFFF',   cls:'bg-white' },
-  { key:'navy',  label:'BG · Navy2 #202936',   cls:'bg-navy'  },
+  { key:'white', label:'BG · White #FFFFFF', cls:'bg-white' },
+  { key:'navy',  label:'BG · Navy2 #202936', cls:'bg-navy'  },
 ];
 
 // ── DOM 생성 먼저, 렌더링은 나중에 ──────────
