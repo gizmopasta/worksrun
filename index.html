@@ -276,8 +276,26 @@ function fixColor(col, bg) {
 }
 
 function drawLines(ctx, W, H, bg, lines) {
-  lines.forEach(l => {
-    ctx.fillStyle = fixColor(l.color, bg);
+  // fixColor 적용 후 6색 재보장
+  const fixed = lines.map(l => ({ ...l, color: fixColor(l.color, bg) }));
+  const used = new Set(fixed.map(l => l.color));
+  const allCols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
+  // BG와 같은 색 제외한 나머지 6색 보장
+  const validCols = allCols.filter(c => fixColor(c, bg) !== c || c !== (
+    bg === 'white' ? C.white : bg === 'green' ? C.green : C.navy2
+  ));
+  validCols.forEach(col => {
+    const target = fixColor(col, bg);
+    if (!used.has(target)) {
+      // 가장 작은 선 하나를 교체
+      let minIdx = 0;
+      fixed.forEach((l, i) => { if (l.w < fixed[minIdx].w) minIdx = i; });
+      fixed[minIdx].color = target;
+      used.add(target);
+    }
+  });
+  fixed.forEach(l => {
+    ctx.fillStyle = l.color;
     ctx.fillRect(Math.round(l.x - l.w/2), 0, Math.max(1, Math.ceil(l.w)), H);
   });
 }
@@ -344,6 +362,7 @@ function makeFocal(W, seed) {
 // 양끝 max 420px → 중앙 min 0.5px
 function makeAntiFocal(W, seed) {
   const rand = mkRand(seed);
+  const rand2 = mkRand(seed + 9999);
   const lines = [];
   let x = 0;
   while (x < W + 120) {
@@ -355,8 +374,8 @@ function makeAntiFocal(W, seed) {
     lines.push({ x: x + w/2, w, color: LINE_COLS[ci] });
     x += w + 1 + rand() * 6;
   }
-  injectJumboLine(lines, W, rand);
-  return ensureAllColors(lines, rand);
+  injectJumboLine(lines, W, rand2);
+  return ensureAllColors(lines, rand2);
 }
 
 // ── 섹션 정의 (T1 제외) ───────────────────────────
