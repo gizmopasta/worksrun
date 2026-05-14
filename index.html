@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NAVER WORKS — Pattern Study v5</title>
+<title>NAVER WORKS — Pattern Study v6</title>
 <style>
   :root {
     --green:  #00C85F;
@@ -151,7 +151,7 @@
 <div class="top-header">
   <div>
     <h1>Full Order Brief</h1>
-    <div class="version-tag">v5 · Type Study — 5 Visual Types × 3 BG</div>
+    <div class="version-tag">v6 · Type Study — 4 Visual Types × 3 BG</div>
     <ul class="order-list">
       <li><span class="key">Project</span><span class="val confirm">NAVER WORKS 마라톤 행사</span></li>
       <li><span class="key">Output</span><span class="val confirm">SVG (프레임 캡처) + Lottie JSON (모션)</span></li>
@@ -171,15 +171,15 @@
     <div style="margin-top:28px;">
       <h1 style="margin-bottom:10px;">Study Composition</h1>
       <ul class="order-list">
-        <li><span class="key">총 시안</span><span class="val confirm">15개 (5 유형 × 배경 3종)</span></li>
-        <li><span class="key">Type 1</span><span class="val">Rhythm — 규칙적 리듬, 굵기 패턴 반복</span></li>
+        <li><span class="key">총 시안</span><span class="val confirm">12개 (4 유형 × 배경 3종)</span></li>
+        <li><span class="key">Type 1</span><span class="val confirm">제외 — 뭉치는 구간 구조적 문제</span></li>
         <li><span class="key">Type 2</span><span class="val">Chaos — 완전 랜덤, 굵기·간격 예측 불가</span></li>
-        <li><span class="key">Type 3</span><span class="val">Focal — 중앙 집중, 가운데 굵고 양끝 얇아짐</span></li>
-        <li><span class="key">Type 4</span><span class="val">Breath — 파동형 밀도, 촘촘·여유 구간 교차</span></li>
-        <li><span class="key">Type 5</span><span class="val">Minimal — 극단적 여백, 굵기 차이 극단적</span></li>
+        <li><span class="key">Type 3</span><span class="val">Focal — 편차 4배 확대 (중앙 max 480px)</span></li>
+        <li><span class="key">Type 4</span><span class="val">Breath — 편차 4배 확대 (여유 구간 max 352px)</span></li>
+        <li><span class="key">Type 5</span><span class="val">Minimal — 6색 전부 균등 보장, 선 수 확대</span></li>
         <li><span class="key">배경 변수</span><span class="val">White #FFFFFF / Navy2 #202936 / Green #00C85F</span></li>
         <li><span class="key">고정 변수</span><span class="val">선 방향(세로) · WORKS 6색 · Glow 없음</span></li>
-        <li><span class="key">비교 변수</span><span class="val">선 배치 유형 (시각적으로 명확히 다른 5가지)</span></li>
+        <li><span class="key">비교 변수</span><span class="val">선 배치 유형 (시각적으로 명확히 다른 4가지)</span></li>
       </ul>
     </div>
   </div>
@@ -211,7 +211,7 @@
       <div class="step-num">04</div>
       <div class="step-content">
         <div class="step-title">정적 그래픽 구조 탐색 <span class="now-badge">NOW</span></div>
-        <div class="step-sub">5가지 시각 유형 × 배경 3종 — 15개 시안 비교</div>
+        <div class="step-sub">4가지 시각 유형 × 배경 3종 — 12개 시안 비교</div>
       </div>
     </div>
     <div class="process-step">
@@ -280,135 +280,122 @@ function drawLines(ctx, W, H, bg, lines) {
   });
 }
 
-// ── TYPE 1: RHYTHM ─────────────────────────
-// 굵기가 패턴을 이루며 반복 (얇얇얇굵 패턴 반복)
-function makeRhythm(W, seed) {
-  const rand = mkRand(seed);
-  const pattern = [1, 1, 2, 1, 1, 3, 1, 18, 1, 1, 2, 1, 45, 1, 1, 1, 3, 1, 1, 100];
-  const lines = [];
-  let x = 0, pi = 0;
-  while (x < W + 120) {
-    const w = pattern[pi % pattern.length];
-    const ci = Math.floor(rand() * LINE_COLS.length);
-    lines.push({ x: x + w/2, w, color: LINE_COLS[ci] });
-    x += w + 3 + rand() * 2;
-    pi++;
-  }
+// ── 6색 균등 보장 헬퍼 ───────────────────
+// 선 배열에 6색이 전부 들어가도록 보장
+function ensureAllColors(lines, rand) {
+  const used = new Set(lines.map(l => l.color));
+  LINE_COLS.forEach(col => {
+    if (!used.has(col)) {
+      // 랜덤 위치의 선 컬러를 교체
+      const idx = Math.floor(rand() * lines.length);
+      lines[idx].color = col;
+    }
+  });
   return lines;
 }
 
 // ── TYPE 2: CHAOS ──────────────────────────
-// 완전 랜덤 — 굵기/간격 모두 예측 불가
 function makeChaos(W, seed) {
   const rand = mkRand(seed);
   const lines = [];
   let x = 0;
   while (x < W + 200) {
-    const r = rand();
-    // 완전 랜덤 굵기: 0.5 ~ 180px, 지수 분포
     const w = 0.5 + Math.pow(rand(), 3) * 180;
     const ci = Math.floor(rand() * LINE_COLS.length);
     lines.push({ x: x + w/2, w, color: LINE_COLS[ci] });
-    // 완전 랜덤 gap: 0 ~ 40px
     x += w + rand() * 40;
   }
-  return lines;
+  return ensureAllColors(lines, rand);
 }
 
-// ── TYPE 3: FOCAL ──────────────────────────
-// 중앙 집중 — 가운데 굵고 양끝으로 갈수록 얇아짐
+// ── TYPE 3: FOCAL (편차 4배) ───────────────
 function makeFocal(W, seed) {
   const rand = mkRand(seed);
   const lines = [];
   let x = 0;
   while (x < W + 120) {
-    // 중앙에서 거리에 따라 굵기 결정
-    const dist = Math.abs((x / W) - 0.5) * 2; // 0=중앙, 1=끝
-    const maxW = 120 * (1 - Math.pow(dist, 0.7));
-    const minW = 0.5;
-    const r = rand();
-    const w = minW + Math.pow(1 - r, 2.5) * maxW;
+    const dist = Math.abs((x / W) - 0.5) * 2;
+    const maxW = 480 * (1 - Math.pow(dist, 0.7)); // 120 → 480 (4배)
+    const w = 0.5 + Math.pow(1 - rand(), 2.5) * maxW;
     const ci = Math.floor(rand() * LINE_COLS.length);
     lines.push({ x: x + w/2, w, color: LINE_COLS[ci] });
     x += w + 1 + rand() * 6;
   }
-  return lines;
+  return ensureAllColors(lines, rand);
 }
 
-// ── TYPE 4: BREATH ─────────────────────────
-// 파동형 밀도 — 촘촘한 구간과 여유로운 구간이 물결처럼 교차
+// ── TYPE 4: BREATH (편차 4배) ──────────────
 function makeBreath(W, seed) {
   const rand = mkRand(seed);
   const lines = [];
   let x = 0;
   while (x < W + 120) {
-    // 사인파로 밀도 구간 제어
-    const wave = Math.sin((x / W) * Math.PI * 6); // 6주기
-    const density = (wave + 1) / 2; // 0~1
-    // 밀도 높을수록 얇고 촘촘, 낮을수록 굵고 여유
+    const wave = Math.sin((x / W) * Math.PI * 6);
+    const density = (wave + 1) / 2;
     const w = density > 0.5
-      ? 0.5 + rand() * 3           // 촘촘 구간: 얇은 선
-      : 8 + rand() * 80;           // 여유 구간: 굵은 선
+      ? 0.5 + rand() * 3
+      : 8 + rand() * 352; // 88 → 352 (4배)
     const gap = density > 0.5
-      ? rand() * 3                  // 촘촘 구간: 좁은 간격
-      : 5 + rand() * 30;           // 여유 구간: 넓은 간격
+      ? rand() * 3
+      : 5 + rand() * 30;
     const ci = Math.floor(rand() * LINE_COLS.length);
     lines.push({ x: x + w/2, w, color: LINE_COLS[ci] });
     x += w + gap;
   }
-  return lines;
+  return ensureAllColors(lines, rand);
 }
 
-// ── TYPE 5: MINIMAL ────────────────────────
-// 극단적 여백 — 선 몇 개만, 굵기 차이 극단적
+// ── TYPE 5: MINIMAL (6색 균등 보장) ────────
 function makeMinimal(W, seed) {
   const rand = mkRand(seed);
   const lines = [];
+  // 6색 각각 최소 3번씩 강제 배정 후 나머지 채우기
+  const forcedColors = [...LINE_COLS, ...LINE_COLS, ...LINE_COLS]; // 18개 강제
+  let forceIdx = 0;
+  // shuffle
+  for (let i = forcedColors.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [forcedColors[i], forcedColors[j]] = [forcedColors[j], forcedColors[i]];
+  }
   let x = 8;
   while (x < W - 8) {
     const r = rand();
-    // 80% 확률로 극얇(0.5~2), 20% 확률로 극굵(40~200)
-    const w = r < 0.80
+    const w = r < 0.78
       ? 0.5 + rand() * 1.5
       : 40 + rand() * 160;
-    const ci = Math.floor(rand() * LINE_COLS.length);
-    lines.push({ x: x + w/2, w, color: LINE_COLS[ci] });
-    // 간격도 랜덤하게 넓음
+    const color = forceIdx < forcedColors.length
+      ? forcedColors[forceIdx++]
+      : LINE_COLS[Math.floor(rand() * LINE_COLS.length)];
+    lines.push({ x: x + w/2, w, color });
     x += w + 6 + rand() * 50;
   }
   return lines;
 }
 
-// ── 섹션 정의 ─────────────────────────────
+// ── 섹션 정의 (T1 제외) ───────────────────
 const TYPES = [
   {
-    id: '1', name: 'Rhythm',
-    concept: '<strong>규칙적 리듬</strong> — 얇은 선 반복 사이에 굵은 선이 박자처럼 등장. 패턴이 반복되며 리듬감 형성.',
-    chips: ['Pattern: 얇얇얇·굵·얇얇·초굵 반복', 'Gap: 균일 (3~5px)', 'Max width: 100px'],
-    makeFn: makeRhythm, seed: 1001
-  },
-  {
     id: '2', name: 'Chaos',
-    concept: '<strong>완전 랜덤</strong> — 굵기와 간격 모두 예측 불가. 에너지감, 역동성 극대화.',
-    chips: ['Width: 0.5~180px 완전 랜덤', 'Gap: 0~40px 완전 랜덤', '지수 분포로 얇은 선 편향'],
+    concept: '<strong>완전 랜덤</strong> — 굵기와 간격 모두 예측 불가. 에너지감, 역동성 극대화. 6색 전부 보장.',
+    chips: ['Width: 0.5~180px 완전 랜덤', 'Gap: 0~40px 완전 랜덤', '6색 균등 보장'],
     makeFn: makeChaos, seed: 2001
   },
   {
     id: '3', name: 'Focal',
-    concept: '<strong>중앙 집중</strong> — 화면 중앙에 굵은 선이 집중되고 양끝으로 갈수록 얇아짐. 시선 중앙 유도.',
-    chips: ['중앙 Max: 120px', '끝단 Min: 0.5px', '거리 기반 지수 함수'],
+    concept: '<strong>중앙 집중 ×4</strong> — 중앙 max 480px로 확대. 양끝으로 갈수록 극단적으로 얇아짐.',
+    chips: ['중앙 Max: 480px (4배 확대)', '끝단 Min: 0.5px', '6색 균등 보장'],
     makeFn: makeFocal, seed: 3001
   },
   {
     id: '4', name: 'Breath',
-    concept: '<strong>파동형 밀도</strong> — 촘촘한 구간과 여유로운 구간이 사인파로 교차. 숨쉬는 듯한 리듬.',
-    chips: ['6주기 사인파', '촘촘 구간: 0.5~3px', '여유 구간: 8~88px'],
+    concept: '<strong>파동형 밀도 ×4</strong> — 여유 구간 max 352px로 확대. 촘촘·여유 대비 극대화.',
+    chips: ['6주기 사인파', '촘촘 구간: 0.5~3px', '여유 구간: 8~352px (4배 확대)', '6색 균등 보장'],
     makeFn: makeBreath, seed: 4001
   },
   {
     id: '5', name: 'Minimal',
-    concept: '<strong>극단적 여백</strong> — 선 수 최소화, 굵기 대비 극단적. 80% 극얇, 20% 극굵.',
-    chips: ['얇은 선: 0.5~2px (80%)', '굵은 선: 40~200px (20%)', 'Gap: 6~56px 여유'],
+    concept: '<strong>극단적 여백</strong> — 극얇 78% + 극굵 22%. 6색 각각 최소 3회 균등 배정.',
+    chips: ['얇은 선: 0.5~2px (78%)', '굵은 선: 40~200px (22%)', '6색 × 최소 3회 강제 배정'],
     makeFn: makeMinimal, seed: 5001
   },
 ];
