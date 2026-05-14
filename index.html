@@ -450,15 +450,20 @@ TYPES.forEach(type => {
     `;
     cards.appendChild(card);
 
-    setTimeout(() => {
-      const canvas = document.getElementById(cid);
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const W = canvas.width, H = canvas.height;
-      drawBg(ctx, W, H, bg.key);
-      const lines = type.makeFn(W, type.seed);
-      drawLines(ctx, W, H, bg.key, lines);
-    }, 0);
+    // 인덱스 기반 딜레이로 순서대로 안정적으로 렌더링
+    (function(canvasId, bgKey, makeFn, seed, delay) {
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          const canvas = document.getElementById(canvasId);
+          if (!canvas) return;
+          const ctx = canvas.getContext('2d');
+          const W = canvas.width, H = canvas.height;
+          drawBg(ctx, W, H, bgKey);
+          const lines = makeFn(W, seed);
+          drawLines(ctx, W, H, bgKey, lines);
+        });
+      }, delay);
+    })(cid, bg.key, type.makeFn, type.seed, (TYPES.indexOf(type) * 3 + BGS.indexOf(bg)) * 30);
   });
 
   section.appendChild(cards);
