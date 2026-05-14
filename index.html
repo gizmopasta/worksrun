@@ -409,7 +409,9 @@ const BGS = [
   { key:'green', label:'BG · Green #00C85F',   cls:'bg-green' },
 ];
 
-// ── DOM + Canvas 렌더링 ────────────────────
+// ── DOM 생성 먼저, 렌더링은 나중에 ──────────
+const renderQueue = []; // {canvasId, bgKey, makeFn, seed}
+
 TYPES.forEach(type => {
   const section = document.createElement('div');
   section.className = 'section';
@@ -453,25 +455,37 @@ TYPES.forEach(type => {
     `;
     cards.appendChild(card);
 
-    // 인덱스 기반 딜레이로 순서대로 안정적으로 렌더링
-    (function(canvasId, bgKey, makeFn, seed, delay) {
-      setTimeout(() => {
-        requestAnimationFrame(() => {
-          const canvas = document.getElementById(canvasId);
-          if (!canvas) return;
-          const ctx = canvas.getContext('2d');
-          const W = canvas.width, H = canvas.height;
-          drawBg(ctx, W, H, bgKey);
-          const lines = makeFn(W, seed);
-          drawLines(ctx, W, H, bgKey, lines);
-        });
-      }, delay);
-    })(cid, bg.key, type.makeFn, type.seed, (TYPES.indexOf(type) * 3 + BGS.indexOf(bg)) * 30);
+    // 렌더 큐에 추가
+    renderQueue.push({ id: cid, bgKey: bg.key, makeFn: type.makeFn, seed: type.seed });
   });
 
   section.appendChild(cards);
   document.body.appendChild(section);
 });
+
+// ── 모든 DOM 생성 후 순차 렌더링 ─────────────
+function renderNext(queue, index) {
+  if (index >= queue.length) return;
+  const { id, bgKey, makeFn, seed } = queue[index];
+  requestAnimationFrame(() => {
+    const canvas = document.getElementById(id);
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      drawBg(ctx, W, H, bgKey);
+      const lines = makeFn(W, seed);
+      drawLines(ctx, W, H, bgKey, lines);
+    }
+    renderNext(queue, index + 1);
+  });
+}
+
+// DOM 완전히 준비된 후 실행
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => renderNext(renderQueue, 0));
+} else {
+  renderNext(renderQueue, 0);
+}
 </script>
 
 <!-- ══ DOWNLOAD BUTTON ══════════════════════ -->
