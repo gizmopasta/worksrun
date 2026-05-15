@@ -616,9 +616,9 @@ TYPES.forEach(type => {
     cards.appendChild(card);
 
     // 렌더 큐에 추가 — 클로저 문제 방지: 값을 즉시 캡처
-    (function(canvasId, bgKey, fn, seed) {
-      renderQueue.push({ id: canvasId, bgKey: bgKey, makeFn: fn, seed: seed });
-    })(cid, bg.key, type.makeFn, type.seed);
+    (function(canvasId, bgKey, fn, seed, tid) {
+      renderQueue.push({ id: canvasId, bgKey: bgKey, makeFn: fn, seed: seed, typeId: tid });
+    })(cid, bg.key, type.makeFn, type.seed, type.id);
   });
 
   section.appendChild(cards);
@@ -628,15 +628,25 @@ TYPES.forEach(type => {
 // ── 모든 DOM 생성 후 순차 렌더링 ─────────────
 function renderNext(queue, index) {
   if (index >= queue.length) return;
-  const { id, bgKey, makeFn, seed } = queue[index];
+  const { id, bgKey, makeFn, seed, typeId } = queue[index];
   requestAnimationFrame(() => {
     const canvas = document.getElementById(id);
     if (canvas) {
       const ctx = canvas.getContext('2d');
       const W = canvas.width, H = canvas.height;
-      drawBg(ctx, W, H, bgKey);
-      const lines = makeFn(W, seed);
-      drawLines(ctx, W, H, bgKey, lines);
+      // T5는 프레임 꽉 채우므로 배경 없이 바로 선만 그림, fixColor 미적용
+      if (typeId === '5') {
+        ctx.clearRect(0, 0, W, H);
+        const lines = makeFn(W, seed);
+        lines.forEach(l => {
+          ctx.fillStyle = l.color;
+          ctx.fillRect(Math.round(l.x - l.w/2), 0, Math.ceil(l.w), H);
+        });
+      } else {
+        drawBg(ctx, W, H, bgKey);
+        const lines = makeFn(W, seed);
+        drawLines(ctx, W, H, bgKey, lines);
+      }
     }
     renderNext(queue, index + 1);
   });
