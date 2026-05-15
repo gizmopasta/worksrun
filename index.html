@@ -584,43 +584,69 @@ TYPES.forEach(type => {
     <div class="section-concept">${type.concept}</div>
     <div class="fixed-vars">
       ${type.chips.map(c => `<div class="var-chip hi">${c}</div>`).join('')}
-      <div class="var-chip">Variable → Background (3종)</div>
+      ${type.noFixColor ? '<div class="var-chip">배경 없음 · 6색 프레임 채움</div>' : '<div class="var-chip">Variable → Background (2종)</div>'}
     </div>
   `;
 
   const cards = document.createElement('div');
   cards.className = 'cards';
 
-  const bgsToUse = (type.noFixColor) ? [BGS[0]] : BGS;
-  bgsToUse.forEach((bg, bi) => {
-    const cid = `T${type.id}_${bi+1}`;
+  if (type.noFixColor) {
+    // T5a/b/c: 배경 없이 1개만 렌더
+    const cid = `T${type.id}_1`;
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
       <div class="card-meta">
         <div class="card-id">${cid} · ${type.name}</div>
-        <div class="card-diff ${bg.cls}">${bg.label}</div>
+        <div class="card-diff bg-green">6색 솔리드 · 배경 없음</div>
       </div>
       <div class="canvas-wrap">
-        <canvas id="${cid}" width="960" height="540"></canvas>
+        <canvas id="${cid}" width="1200" height="675"></canvas>
         <div class="canvas-overlay">
           <div class="ov-item">Type<span>${type.name}</span></div>
           <div class="ov-div"></div>
-          <div class="ov-item">BG<span>${bg.label.replace('BG · ','')}</span></div>
+          <div class="ov-item">6색<span>× 1번씩</span></div>
           <div class="ov-div"></div>
-          <div class="ov-item">Lines<span>WORKS 6색</span></div>
-          <div class="ov-div"></div>
-          <div class="ov-item">Glow<span>없음</span></div>
+          <div class="ov-item">점보<span>35%</span></div>
         </div>
       </div>
     `;
     cards.appendChild(card);
+    (function(canvasId, fn, seed, tid) {
+      renderQueue.push({ id: canvasId, bgKey: 'white', makeFn: fn, seed: seed, typeId: tid });
+    })(cid, type.makeFn, type.seed, type.id);
 
-    // 렌더 큐에 추가 — 클로저 문제 방지: 값을 즉시 캡처
-    (function(canvasId, bgKey, fn, seed, tid) {
-      renderQueue.push({ id: canvasId, bgKey: bgKey, makeFn: fn, seed: seed, typeId: tid });
-    })(cid, bg.key, type.makeFn, type.seed, type.id);
-  });
+  } else {
+    // 일반 타입: BGS 2종
+    BGS.forEach((bg, bi) => {
+      const cid = `T${type.id}_${bi+1}`;
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="card-meta">
+          <div class="card-id">${cid} · ${type.name}</div>
+          <div class="card-diff ${bg.cls}">${bg.label}</div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="${cid}" width="1200" height="675"></canvas>
+          <div class="canvas-overlay">
+            <div class="ov-item">Type<span>${type.name}</span></div>
+            <div class="ov-div"></div>
+            <div class="ov-item">BG<span>${bg.label.replace('BG · ','')}</span></div>
+            <div class="ov-div"></div>
+            <div class="ov-item">Lines<span>WORKS 6색</span></div>
+            <div class="ov-div"></div>
+            <div class="ov-item">Glow<span>없음</span></div>
+          </div>
+        </div>
+      `;
+      cards.appendChild(card);
+      (function(canvasId, bgKey, fn, seed, tid) {
+        renderQueue.push({ id: canvasId, bgKey: bgKey, makeFn: fn, seed: seed, typeId: tid });
+      })(cid, bg.key, type.makeFn, type.seed, type.id);
+    });
+  }
 
   section.appendChild(cards);
   document.body.appendChild(section);
