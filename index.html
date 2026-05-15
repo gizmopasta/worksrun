@@ -174,17 +174,17 @@
     <div style="margin-top:28px;">
       <h1 style="margin-bottom:10px;">Study Composition</h1>
       <ul class="order-list">
-        <li><span class="key">버전</span><span class="val confirm">v10 · 14개 시안 (T2~T6 × 배경 2종)</span></li>
+        <li><span class="key">버전</span><span class="val confirm">v10 · 12개 시안 (T2~T5 × 배경 2종)</span></li>
         <li><span class="key">T2 · Chaos</span><span class="val">완전 랜덤 / 점보 30~35% Blue/Green / 6색 균등</span></li>
         <li><span class="key">T3 · Focal</span><span class="val">중앙 굵고 양끝 얇아짐 / 점보 Blue/Green / 6색 균등</span></li>
         <li><span class="key">T3b · Anti-Focal</span><span class="val">양끝 밀집·굵음 / 중앙 얇은 선 2배 밀도 / 점보 Blue/Green / 6색 균등</span></li>
         <li><span class="key">T4a · L→R</span><span class="val">좌 얇고 촘촘 → 우 굵고 드문 → 맨 우측 가장자리 점보 40%</span></li>
         <li><span class="key">T4b · R→L</span><span class="val">우 얇고 촘촘 → 좌 굵고 드문 → 맨 좌측 가장자리 점보 40%</span></li>
-        <li><span class="key">T5 · Solid-6</span><span class="val">6색 × 1번씩 / 순서 랜덤 / 너비 랜덤 / 프레임 100% 채움</span></li>
-        <li><span class="key">T6 · Solid-Random</span><span class="val">6색 최소 1번 보장 / 선 수 8~16개 랜덤 / 너비 랜덤 / 프레임 100% 채움</span></li>
-        <li><span class="key">공통 규칙</span><span class="val confirm">T2~T4b: 점보 1개 Blue/Green · 6색 보장 · Glow 없음 · 16:9</span></li>
+        <li><span class="key">T5 · Solid-6</span><span class="val">6색 × 1번씩 / 점보 35% Green/Blue/Navy2 / 얇은선1 5~7% / 얇은선2 10~13% / 프레임 100%</span></li>
+        <li><span class="key">T6 · Solid-Random</span><span class="val confirm">제외</span></li>
+        <li><span class="key">공통 규칙</span><span class="val confirm">점보 1개 Blue/Green · 6색 보장 · Glow 없음 · 16:9</span></li>
         <li><span class="key">배경 변수</span><span class="val confirm">White #FFFFFF / Navy2 #202936</span></li>
-        <li><span class="key">최근 오더</span><span class="val">T5/T6 점보 1개 Green/Blue/Navy2 고정 / T6 점보 30%+ 보장</span></li>
+        <li><span class="key">최근 오더</span><span class="val">T6 제외 / T5 점보 35% / 얇은선1 5~7% / 얇은선2 10~13%</span></li>
       </ul>
     </div>
   </div>
@@ -472,6 +472,7 @@ function makeR2L(W, seed) {
 }
 
 // ── TYPE 5: SOLID-6 ───────────────────────
+// 6색 각 1번씩 / 점보 35% / 얇은선1: 5~7% / 얇은선2: 10~13% / 나머지 균등
 function makeSolid6(W, seed) {
   const rand = mkRand(seed);
   const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
@@ -483,98 +484,40 @@ function makeSolid6(W, seed) {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
 
-  // 점보 컬러 결정
+  // 점보 컬러 (Green/Blue/Navy2)
   const jumboCols = [C.green, C.blue, C.navy2];
   const jumboCol = jumboCols[Math.floor(rand() * jumboCols.length)];
   const jumboIdx = shuffled.indexOf(jumboCol);
 
-  // 너비: 전체 비율 기준
-  // 점보: 30~35%, 얇은 선 2개: 3~5%, 나머지: 균등 분배
-  const ratios = shuffled.map((_, i) => {
-    if (i === jumboIdx) return 0.32; // 점보
-    return 0.136; // 나머지 5개 균등 (1 - 0.32) / 5
-  });
-
-  // 얇은 선 2개: 점보 제외 인덱스에서 랜덤 선택
+  // 점보 제외 인덱스 셔플
   const nonJumbo = shuffled.map((_, i) => i).filter(i => i !== jumboIdx);
   for (let k = nonJumbo.length - 1; k > 0; k--) {
     const j = Math.floor(rand() * (k + 1));
     [nonJumbo[k], nonJumbo[j]] = [nonJumbo[j], nonJumbo[k]];
   }
-  // 2개를 얇게 (3~5%), 나머지는 굵게 재분배
-  ratios[nonJumbo[0]] = 0.03 + rand() * 0.02;
-  ratios[nonJumbo[1]] = 0.03 + rand() * 0.02;
-  // 나머지 3개에 남은 비율 분배
-  const usedRatio = ratios[jumboIdx] + ratios[nonJumbo[0]] + ratios[nonJumbo[1]];
-  const remaining = (1 - usedRatio) / 3;
-  [nonJumbo[2], nonJumbo[3], nonJumbo[4]].forEach(idx => {
-    ratios[idx] = remaining * (0.8 + rand() * 0.4);
-  });
 
-  // 정규화
+  // 비율 확정
+  // 점보: 35%
+  // 얇은선1: 5~7%
+  // 얇은선2: 10~13%
+  // 나머지 3개: 남은 비율 균등 분배
+  const ratios = new Array(6).fill(0);
+  ratios[jumboIdx]       = 0.35;
+  ratios[nonJumbo[0]]    = 0.05 + rand() * 0.02; // 5~7%
+  ratios[nonJumbo[1]]    = 0.10 + rand() * 0.03; // 10~13%
+  const used = ratios[jumboIdx] + ratios[nonJumbo[0]] + ratios[nonJumbo[1]];
+  const rem = (1 - used) / 3;
+  ratios[nonJumbo[2]] = rem * (0.85 + rand() * 0.3);
+  ratios[nonJumbo[3]] = rem * (0.85 + rand() * 0.3);
+  ratios[nonJumbo[4]] = rem * (0.85 + rand() * 0.3);
+
+  // 정규화 후 너비 계산
   const total = ratios.reduce((a, b) => a + b, 0);
   const widths = ratios.map(r => (r / total) * W);
 
   const lines = [];
   let x = 0;
   shuffled.forEach((color, i) => {
-    lines.push({ x: x + widths[i] / 2, w: widths[i], color });
-    x += widths[i];
-  });
-  return lines;
-}
-
-// ── TYPE 6: SOLID-RANDOM ──────────────────
-function makeSolidRandom(W, seed) {
-  const rand = mkRand(seed);
-  const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
-  const totalCount = 8 + Math.floor(rand() * 9);
-
-  // 6색 먼저 + 추가
-  const pool = [...cols];
-  while (pool.length < totalCount) {
-    pool.push(cols[Math.floor(rand() * cols.length)]);
-  }
-
-  // 셔플
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
-  }
-
-  // 점보 컬러
-  const jumboCols = [C.green, C.blue, C.navy2];
-  const jumboCol = jumboCols[Math.floor(rand() * jumboCols.length)];
-  let jumboIdx = pool.indexOf(jumboCol);
-  if (jumboIdx === -1) { pool[0] = jumboCol; jumboIdx = 0; }
-
-  // 비율 배정: 점보 30~35%, 얇은 선 2~3개 3~5%, 나머지 균등
-  const n = pool.length;
-  const ratios = new Array(n).fill(0);
-  ratios[jumboIdx] = 0.30 + rand() * 0.05;
-
-  const nonJumbo = pool.map((_, i) => i).filter(i => i !== jumboIdx);
-  for (let k = nonJumbo.length - 1; k > 0; k--) {
-    const j = Math.floor(rand() * (k + 1));
-    [nonJumbo[k], nonJumbo[j]] = [nonJumbo[j], nonJumbo[k]];
-  }
-  const thinCount = 2 + Math.floor(rand() * 2);
-  let usedRatio = ratios[jumboIdx];
-  for (let t = 0; t < thinCount; t++) {
-    ratios[nonJumbo[t]] = 0.03 + rand() * 0.02;
-    usedRatio += ratios[nonJumbo[t]];
-  }
-  const remaining = (1 - usedRatio) / (nonJumbo.length - thinCount);
-  for (let t = thinCount; t < nonJumbo.length; t++) {
-    ratios[nonJumbo[t]] = remaining * (0.7 + rand() * 0.6);
-  }
-
-  const total = ratios.reduce((a, b) => a + b, 0);
-  const widths = ratios.map(r => (r / total) * W);
-
-  const lines = [];
-  let x = 0;
-  pool.forEach((color, i) => {
     lines.push({ x: x + widths[i] / 2, w: widths[i], color });
     x += widths[i];
   });
@@ -618,13 +561,7 @@ const TYPES = [
     concept: '<strong>6색 솔리드</strong> — 6색 각 1번씩, 순서 랜덤, 너비 랜덤, 프레임 100% 채움.',
     chips: ['6색 × 1회', '순서 랜덤', '점보 1개 Green/Blue/Navy2', '프레임 100% 채움'],
     makeFn: makeSolid6, seed: 5001
-  },
-  {
-    id: '6', name: 'Solid-Random',
-    concept: '<strong>랜덤 솔리드</strong> — 6색 최소 1번 보장, 총 선 수 12개 기준 랜덤(8~16개), 프레임 100% 채움.',
-    chips: ['6색 최소 1회 보장', '선 수 8~16개 랜덤', '점보 1개 30%+ Green/Blue/Navy2', '프레임 100% 채움'],
-    makeFn: makeSolidRandom, seed: 6001
-  },
+  }
 ];
 
 const BGS = [
