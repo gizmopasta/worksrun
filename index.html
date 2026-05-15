@@ -274,7 +274,7 @@ function drawBg(ctx, W, H, bg) {
 function fixColor(col, bg) {
   if (bg === 'white' && (col === C.white || col === C.navy1)) return C.navy2;
   if (bg === 'green' && col === C.green) return C.white;
-  if (bg === 'navy'  && col === C.navy2) return C.blue;
+  if (bg === 'navy'  && col === C.navy2) return C.purple; // navy2→purple로 교체 (시각적 보장)
   return col;
 }
 
@@ -472,44 +472,48 @@ function makeR2L(W, seed) {
 }
 
 // ── TYPE 5: SOLID-6 ───────────────────────
-// 6색 각 정확히 1번씩, 순서 랜덤, 프레임 꽉 채움
-// 점보 1개: Green/Blue/Navy2 중 하나 25~35%
-// 얇은 선: 점보 아닌 선 중 2개는 얇게
 function makeSolid6(W, seed) {
   const rand = mkRand(seed);
   const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
 
-  // 셔플 — 6색 1번씩 순서 확정
+  // 셔플
   const shuffled = [...cols];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
 
-  // 점보 컬러 결정 (Green/Blue/Navy2)
+  // 점보 컬러 결정
   const jumboCols = [C.green, C.blue, C.navy2];
   const jumboCol = jumboCols[Math.floor(rand() * jumboCols.length)];
   const jumboIdx = shuffled.indexOf(jumboCol);
 
-  // 너비 초기값: 중간 굵기
-  const rawW = shuffled.map(() => 0.8 + rand() * 1.5);
+  // 너비: 전체 비율 기준
+  // 점보: 30~35%, 얇은 선 2개: 3~5%, 나머지: 균등 분배
+  const ratios = shuffled.map((_, i) => {
+    if (i === jumboIdx) return 0.32; // 점보
+    return 0.136; // 나머지 5개 균등 (1 - 0.32) / 5
+  });
 
-  // 점보 아닌 인덱스에서 2개를 얇게
+  // 얇은 선 2개: 점보 제외 인덱스에서 랜덤 선택
   const nonJumbo = shuffled.map((_, i) => i).filter(i => i !== jumboIdx);
-  // 랜덤으로 2개 선택해서 얇게
   for (let k = nonJumbo.length - 1; k > 0; k--) {
     const j = Math.floor(rand() * (k + 1));
     [nonJumbo[k], nonJumbo[j]] = [nonJumbo[j], nonJumbo[k]];
   }
-  rawW[nonJumbo[0]] = 0.01 + rand() * 0.04; // 아주 얇게
-  rawW[nonJumbo[1]] = 0.01 + rand() * 0.04;
+  // 2개를 얇게 (3~5%), 나머지는 굵게 재분배
+  ratios[nonJumbo[0]] = 0.03 + rand() * 0.02;
+  ratios[nonJumbo[1]] = 0.03 + rand() * 0.02;
+  // 나머지 3개에 남은 비율 분배
+  const usedRatio = ratios[jumboIdx] + ratios[nonJumbo[0]] + ratios[nonJumbo[1]];
+  const remaining = (1 - usedRatio) / 3;
+  [nonJumbo[2], nonJumbo[3], nonJumbo[4]].forEach(idx => {
+    ratios[idx] = remaining * (0.8 + rand() * 0.4);
+  });
 
-  // 점보: 전체의 25~35%
-  const totalRaw = rawW.reduce((a, b) => a + b, 0);
-  rawW[jumboIdx] = totalRaw * (0.25 + rand() * 0.10);
-
-  const total = rawW.reduce((a, b) => a + b, 0);
-  const widths = rawW.map(w => (w / total) * W);
+  // 정규화
+  const total = ratios.reduce((a, b) => a + b, 0);
+  const widths = ratios.map(r => (r / total) * W);
 
   const lines = [];
   let x = 0;
@@ -521,15 +525,12 @@ function makeSolid6(W, seed) {
 }
 
 // ── TYPE 6: SOLID-RANDOM ──────────────────
-// 6색 최소 1번 보장, 선 수 8~16개 랜덤, 프레임 꽉 채움
-// 점보 1개: Green/Blue/Navy2 중 하나 30~35%
-// 얇은 선: 2~3개 강제 포함
 function makeSolidRandom(W, seed) {
   const rand = mkRand(seed);
   const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
-  const totalCount = 8 + Math.floor(rand() * 9); // 8~16개
+  const totalCount = 8 + Math.floor(rand() * 9);
 
-  // 6색 먼저 넣고 나머지 랜덤 추가
+  // 6색 먼저 + 추가
   const pool = [...cols];
   while (pool.length < totalCount) {
     pool.push(cols[Math.floor(rand() * cols.length)]);
@@ -541,36 +542,35 @@ function makeSolidRandom(W, seed) {
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
 
-  // 점보 컬러 결정 (Green/Blue/Navy2)
+  // 점보 컬러
   const jumboCols = [C.green, C.blue, C.navy2];
   const jumboCol = jumboCols[Math.floor(rand() * jumboCols.length)];
-  // 셔플된 pool에서 해당 컬러 첫 인덱스 — 없으면 강제 삽입
   let jumboIdx = pool.indexOf(jumboCol);
-  if (jumboIdx === -1) {
-    pool[0] = jumboCol;
-    jumboIdx = 0;
-  }
+  if (jumboIdx === -1) { pool[0] = jumboCol; jumboIdx = 0; }
 
-  // 너비: 중간 굵기 기본
-  const rawW = pool.map(() => 0.8 + rand() * 1.5);
+  // 비율 배정: 점보 30~35%, 얇은 선 2~3개 3~5%, 나머지 균등
+  const n = pool.length;
+  const ratios = new Array(n).fill(0);
+  ratios[jumboIdx] = 0.30 + rand() * 0.05;
 
-  // 점보 아닌 인덱스에서 2~3개 얇게
   const nonJumbo = pool.map((_, i) => i).filter(i => i !== jumboIdx);
   for (let k = nonJumbo.length - 1; k > 0; k--) {
     const j = Math.floor(rand() * (k + 1));
     [nonJumbo[k], nonJumbo[j]] = [nonJumbo[j], nonJumbo[k]];
   }
   const thinCount = 2 + Math.floor(rand() * 2);
+  let usedRatio = ratios[jumboIdx];
   for (let t = 0; t < thinCount; t++) {
-    rawW[nonJumbo[t]] = 0.01 + rand() * 0.04;
+    ratios[nonJumbo[t]] = 0.03 + rand() * 0.02;
+    usedRatio += ratios[nonJumbo[t]];
+  }
+  const remaining = (1 - usedRatio) / (nonJumbo.length - thinCount);
+  for (let t = thinCount; t < nonJumbo.length; t++) {
+    ratios[nonJumbo[t]] = remaining * (0.7 + rand() * 0.6);
   }
 
-  // 점보: 전체의 30~35%
-  const totalRaw = rawW.reduce((a, b) => a + b, 0);
-  rawW[jumboIdx] = totalRaw * (0.30 + rand() * 0.05);
-
-  const totalW = rawW.reduce((a, b) => a + b, 0);
-  const widths = rawW.map(w => (w / totalW) * W);
+  const total = ratios.reduce((a, b) => a + b, 0);
+  const widths = ratios.map(r => (r / total) * W);
 
   const lines = [];
   let x = 0;
