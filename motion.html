@@ -202,9 +202,26 @@ function drawFrame(ctx,W,H,bgHex,lines,p,motion) {
       const delay=(i/lines.length)*0.7;
       const appear=Math.max(0,Math.min(1,(p-delay)/0.3));
       dw=w*easeOut(appear);
+    } else if(motion==='slide-up'){
+      // 각 선이 아래서 위로 슬라이드하며 등장 (시간차)
+      const delay=(i/lines.length)*0.3;
+      const lp=Math.max(0,Math.min(1,(p-delay)/(1-delay)));
+      dw=w;
+      const ep=easeOut(lp);
+      const slideY=H*(1-ep); // 아래서 위로
+      if(ep>0){
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(Math.round(x-dw/2),0,Math.max(1,Math.ceil(dw)),H);
+        ctx.clip();
+        ctx.fillStyle=color;
+        ctx.fillRect(Math.round(x-dw/2),slideY,Math.max(1,Math.ceil(dw)),H);
+        ctx.restore();
+      }
+      return; // fillRect 아래에서 하지 않도록
     }
 
-    if(dw>0){
+    if(dw>0 && motion!=='slide-up'){
       ctx.fillStyle=color;
       ctx.fillRect(Math.round(x-dw/2),0,Math.max(1,Math.ceil(dw)),H);
     }
@@ -233,15 +250,9 @@ function startAnim(canvasId, bgHex, lines, motion) {
       // 그래픽 등장
       const p=(el-FADE_IN)/(TOTAL-FADE_IN-FADE_OUT);
       drawFrame(ctx,W,H,bgHex,lines,Math.min(p,0.999),motion);
-    } else if(el<TOTAL) {
-      // 페이드아웃
-      drawFrame(ctx,W,H,bgHex,lines,0.999,motion);
-      const fp=(el-(TOTAL-FADE_OUT))/FADE_OUT;
-      ctx.globalAlpha=easeInExpo(fp);
-      ctx.fillStyle=bgHex; ctx.fillRect(0,0,W,H);
-      ctx.globalAlpha=1;
     } else {
-      ctx.fillStyle=bgHex; ctx.fillRect(0,0,W,H);
+      // 마지막: 그래픽 상태 유지
+      drawFrame(ctx,W,H,bgHex,lines,0.999,motion);
       wrap.classList.remove('playing');
       return;
     }
@@ -268,7 +279,7 @@ function fixColor(col,bgKey) {
 
 // ── 타입 정의 ────────────────────────────
 const TYPES = [
-  { id:'2',  name:'Chaos',      motion:'grow',       motionLabel:'Grow',       makeFn:makeChaos,     seed:2001,
+  { id:'2',  name:'Chaos',      motion:'slide-up',   motionLabel:'Slide Up',       makeFn:makeChaos,     seed:2001,
     bgs:[{key:'white',hex:'#FFFFFF'},{key:'navy',hex:'#202936'}] },
   { id:'3',  name:'Focal',      motion:'center-out', motionLabel:'Center-Out', makeFn:makeFocal,     seed:3001,
     bgs:[{key:'white',hex:'#FFFFFF'},{key:'navy',hex:'#202936'}] },
@@ -278,11 +289,11 @@ const TYPES = [
     bgs:[{key:'white',hex:'#FFFFFF'},{key:'navy',hex:'#202936'}] },
   { id:'4b', name:'R→L',        motion:'side-rl',    motionLabel:'Side R→L',   makeFn:makeR2L,       seed:9001,
     bgs:[{key:'white',hex:'#FFFFFF'},{key:'navy',hex:'#202936'}] },
-  { id:'5a', name:'Solid-A',    motion:'stagger',    motionLabel:'Stagger',    makeFn:(W,s)=>makeSolid(W,s,0.05,0.10), seed:5001,
+  { id:'5a', name:'Solid-A',    motion:'side-lr',    motionLabel:'Side L→R',    makeFn:(W,s)=>makeSolid(W,s,0.05,0.10), seed:5001,
     bgs:[{key:'solid',hex:'#FFFFFF'}], solid:true },
-  { id:'5b', name:'Solid-B',    motion:'stagger',    motionLabel:'Stagger',    makeFn:(W,s)=>makeSolid(W,s+3333,0.07,0.15), seed:5001,
+  { id:'5b', name:'Solid-B',    motion:'center-out', motionLabel:'Center-Out',    makeFn:(W,s)=>makeSolid(W,s+3333,0.07,0.15), seed:5001,
     bgs:[{key:'solid',hex:'#FFFFFF'}], solid:true },
-  { id:'5c', name:'Solid-C',    motion:'stagger',    motionLabel:'Stagger',    makeFn:(W,s)=>makeSolid(W,s+7777,0.10,0.20), seed:5001,
+  { id:'5c', name:'Solid-C',    motion:'outside-in', motionLabel:'Outside-In',    makeFn:(W,s)=>makeSolid(W,s+7777,0.10,0.20), seed:5001,
     bgs:[{key:'solid',hex:'#FFFFFF'}], solid:true },
 ];
 
