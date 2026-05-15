@@ -472,8 +472,6 @@ function makeR2L(W, seed) {
 }
 
 // ── TYPE 5: SOLID-6 ───────────────────────
-// 6색 각 1번씩, 순서 랜덤, 너비 랜덤, 프레임 꽉 채움
-// 점보 1개: Green/Blue/Navy2 중 하나가 가장 넓게
 function makeSolid6(W, seed) {
   const rand = mkRand(seed);
   const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
@@ -483,21 +481,21 @@ function makeSolid6(W, seed) {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
 
-  // 너비 랜덤 생성
-  const rawW = shuffled.map(() => 0.3 + rand() * 2.7);
+  // 굵기 분포: 굵은 것 위주지만 1~2개는 확실히 얇게
+  const rawW = shuffled.map((_, i) => {
+    if (i < 2) return 0.02 + rand() * 0.05; // 얇은 선 2개 강제
+    return 0.5 + rand() * 3.0;              // 나머지는 굵게
+  });
 
-  // 점보 컬러: Green/Blue/Navy2 중 하나 선택
+  // 점보: Green/Blue/Navy2 → 25~35%
   const jumboCols = [C.green, C.blue, C.navy2];
   const jumboCol = jumboCols[Math.floor(rand() * jumboCols.length)];
   const jumboIdx = shuffled.indexOf(jumboCol);
-
-  // 점보 선을 나머지보다 확실히 크게 (전체의 25~35%)
   const totalRaw = rawW.reduce((a, b) => a + b, 0);
   rawW[jumboIdx] = totalRaw * (0.25 + rand() * 0.10);
 
   const total = rawW.reduce((a, b) => a + b, 0);
   const widths = rawW.map(w => (w / total) * W);
-
   const lines = [];
   let x = 0;
   shuffled.forEach((color, i) => {
@@ -508,39 +506,35 @@ function makeSolid6(W, seed) {
 }
 
 // ── TYPE 6: SOLID-RANDOM ──────────────────
-// 6색 최소 1번 보장, 선 수 8~16개 랜덤, 프레임 꽉 채움
-// 점보 1개: Green/Blue/Navy2 중 하나가 30%+ 차지
 function makeSolidRandom(W, seed) {
   const rand = mkRand(seed);
   const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
-  const total = 8 + Math.floor(rand() * 9); // 8~16개
+  const total = 8 + Math.floor(rand() * 9);
   const pool = [...cols];
   while (pool.length < total) {
     pool.push(cols[Math.floor(rand() * cols.length)]);
   }
-  // 셔플
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
 
-  // 너비 랜덤
-  const rawW = pool.map(() => 0.3 + rand() * 2.7);
+  // 굵기 분포: 2~3개는 확실히 얇게, 나머지는 굵게
+  const thinCount = 2 + Math.floor(rand() * 2); // 2~3개 얇은 선
+  const rawW = pool.map((_, i) => {
+    if (i < thinCount) return 0.02 + rand() * 0.05; // 얇은 선
+    return 0.5 + rand() * 3.0;                       // 굵은 선
+  });
 
-  // 점보: Green/Blue/Navy2 중 하나, 30%+ 보장
+  // 점보: Green/Blue/Navy2 → 30~35%
   const jumboCols = [C.green, C.blue, C.navy2];
   const jumboCol = jumboCols[Math.floor(rand() * jumboCols.length)];
-  // pool에서 해당 컬러 첫번째 인덱스 찾기
-  const jumboIdx = pool.indexOf(jumboCol) !== -1
-    ? pool.indexOf(jumboCol)
-    : 0;
-  // 점보 너비: 전체의 30~35%
+  const jumboIdx = pool.indexOf(jumboCol) !== -1 ? pool.indexOf(jumboCol) : 0;
   const totalRaw = rawW.reduce((a, b) => a + b, 0);
   rawW[jumboIdx] = totalRaw * (0.30 + rand() * 0.05);
 
   const totalW = rawW.reduce((a, b) => a + b, 0);
   const widths = rawW.map(w => (w / totalW) * W);
-
   const lines = [];
   let x = 0;
   pool.forEach((color, i) => {
