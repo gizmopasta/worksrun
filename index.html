@@ -174,17 +174,18 @@
     <div style="margin-top:28px;">
       <h1 style="margin-bottom:10px;">Study Composition</h1>
       <ul class="order-list">
-        <li><span class="key">버전</span><span class="val confirm">v10 · 12개 시안 (T2~T5 × 배경 2종)</span></li>
+        <li><span class="key">버전</span><span class="val confirm">v10 · T2/T3/T3b/T4a/T4b/T5a/T5b/T5c</span></li>
         <li><span class="key">T2 · Chaos</span><span class="val">완전 랜덤 / 점보 30~35% Blue/Green / 6색 균등</span></li>
         <li><span class="key">T3 · Focal</span><span class="val">중앙 굵고 양끝 얇아짐 / 점보 Blue/Green / 6색 균등</span></li>
         <li><span class="key">T3b · Anti-Focal</span><span class="val">양끝 밀집·굵음 / 중앙 얇은 선 2배 밀도 / 점보 Blue/Green / 6색 균등</span></li>
-        <li><span class="key">T4a · L→R</span><span class="val">좌 얇고 촘촘 → 우 굵고 드문 → 맨 우측 가장자리 점보 40%</span></li>
-        <li><span class="key">T4b · R→L</span><span class="val">우 얇고 촘촘 → 좌 굵고 드문 → 맨 좌측 가장자리 점보 40%</span></li>
-        <li><span class="key">T5 · Solid-6</span><span class="val">6색 × 1번씩 / 점보 35% Green/Blue/Navy2 / 얇은선1 5~7% / 얇은선2 10~13% / 프레임 100%</span></li>
-        <li><span class="key">T6 · Solid-Random</span><span class="val confirm">제외</span></li>
-        <li><span class="key">공통 규칙</span><span class="val confirm">점보 1개 Blue/Green · 6색 보장 · Glow 없음 · 16:9</span></li>
-        <li><span class="key">배경 변수</span><span class="val confirm">White #FFFFFF / Navy2 #202936</span></li>
-        <li><span class="key">최근 오더</span><span class="val">T6 제외 / T5 점보 35% / 얇은선1 5~7% / 얇은선2 10~13%</span></li>
+        <li><span class="key">T4a · L→R</span><span class="val">좌 얇고 촘촘 → 우 굵고 드문 → 맨 우측 점보 40%</span></li>
+        <li><span class="key">T4b · R→L</span><span class="val">우 얇고 촘촘 → 좌 굵고 드문 → 맨 좌측 점보 40%</span></li>
+        <li><span class="key">T5a · Solid-A</span><span class="val">6색 × 1번씩 / 점보 35% / 얇은선1 5% / 얇은선2 10% / 배합1</span></li>
+        <li><span class="key">T5b · Solid-B</span><span class="val">6색 × 1번씩 / 점보 35% / 얇은선1 7% / 얇은선2 15% / 배합2</span></li>
+        <li><span class="key">T5c · Solid-C</span><span class="val">6색 × 1번씩 / 점보 35% / 얇은선1 10% / 얇은선2 20% / 배합3</span></li>
+        <li><span class="key">공통 규칙</span><span class="val confirm">T2~T4b: 점보 Blue/Green · 6색 보장 · Glow 없음 · 16:9</span></li>
+        <li><span class="key">배경 변수</span><span class="val confirm">White / Navy2 (T5 제외 — 배합·컬러로 구분)</span></li>
+        <li><span class="key">최근 오더</span><span class="val">T5 배합+컬러 3종 분리 / T6 제거</span></li>
       </ul>
     </div>
   </div>
@@ -471,48 +472,34 @@ function makeR2L(W, seed) {
   return ensureAllColors(lines, mkRand(seed + 1));
 }
 
-// ── TYPE 5: SOLID-6 ───────────────────────
-// 6색 × 1번씩 / 점보 35% / 얇은선1 최소 5% / 얇은선2 최소 10% / 나머지 균등
-function makeSolid6(W, seed) {
+// ── TYPE 5 공통 함수 ─────────────────────
+function makeSolid6Base(W, seed, thin1R, thin2R) {
   const rand = mkRand(seed);
   const cols = ['#00C85F','#008CFF','#4757FF','#202936','#FFFFFF','#F0F5FA'];
-
-  // 셔플
   const shuffled = [...cols];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-
-  // 점보: Green/Blue/Navy2 중 하나
   const jumboCols = ['#00C85F','#008CFF','#202936'];
   const jumboCol = jumboCols[Math.floor(rand() * jumboCols.length)];
   const jumboIdx = shuffled.indexOf(jumboCol);
-
-  // 점보 제외 인덱스 셔플
   const nonJumbo = shuffled.map((_, i) => i).filter(i => i !== jumboIdx);
   for (let k = nonJumbo.length - 1; k > 0; k--) {
     const j = Math.floor(rand() * (k + 1));
     [nonJumbo[k], nonJumbo[j]] = [nonJumbo[j], nonJumbo[k]];
   }
-
-  // 절대 픽셀 기준으로 너비 확정 (정규화 전에 최소값 보장)
   const widths = new Array(6).fill(0);
-  widths[jumboIdx]    = W * 0.35;                          // 점보 35%
-  widths[nonJumbo[0]] = W * (0.05 + rand() * 0.02);       // 얇은선1: 5~7%
-  widths[nonJumbo[1]] = W * (0.10 + rand() * 0.03);       // 얇은선2: 10~13%
-
-  // 나머지 3개: 남은 너비 균등 분배
+  widths[jumboIdx]    = W * 0.35;
+  widths[nonJumbo[0]] = W * thin1R;
+  widths[nonJumbo[1]] = W * thin2R;
   const used = widths[jumboIdx] + widths[nonJumbo[0]] + widths[nonJumbo[1]];
   const rem = (W - used) / 3;
   widths[nonJumbo[2]] = rem * (0.85 + rand() * 0.3);
   widths[nonJumbo[3]] = rem * (0.85 + rand() * 0.3);
   widths[nonJumbo[4]] = rem * (0.85 + rand() * 0.3);
-
-  // 합계가 W와 다를 수 있으니 정규화
   const total = widths.reduce((a, b) => a + b, 0);
   const finalW = widths.map(w => (w / total) * W);
-
   const lines = [];
   let x = 0;
   shuffled.forEach((color, i) => {
@@ -521,6 +508,9 @@ function makeSolid6(W, seed) {
   });
   return lines;
 }
+function makeSolid6A(W, seed) { return makeSolid6Base(W, seed,        0.05, 0.10); }
+function makeSolid6B(W, seed) { return makeSolid6Base(W, seed + 3333, 0.07, 0.15); }
+function makeSolid6C(W, seed) { return makeSolid6Base(W, seed + 7777, 0.10, 0.20); }
 
 // ── 섹션 정의 (T1 제외) ───────────────────────────────────────
 const TYPES = [
@@ -555,11 +545,23 @@ const TYPES = [
     makeFn: makeR2L, seed: 9001
   },
   {
-    id: '5', name: 'Solid-6',
-    concept: '<strong>6색 솔리드</strong> — 6색 각 1번씩, 순서 랜덤, 너비 랜덤, 프레임 100% 채움.',
-    chips: ['6색 × 1회', '순서 랜덤', '점보 1개 Green/Blue/Navy2', '프레임 100% 채움'],
-    makeFn: makeSolid6, seed: 5001
-  }
+    id: '5a', name: 'Solid-A',
+    concept: '<strong>Solid A</strong> — 점보 35% / 얇은선1 5% / 얇은선2 10% / 컬러 배합 1',
+    chips: ['점보 35%', '얇은선1 5%', '얇은선2 10%', '6색 × 1번씩'],
+    makeFn: makeSolid6A, seed: 5001, noFixColor: true
+  },
+  {
+    id: '5b', name: 'Solid-B',
+    concept: '<strong>Solid B</strong> — 점보 35% / 얇은선1 7% / 얇은선2 15% / 컬러 배합 2',
+    chips: ['점보 35%', '얇은선1 7%', '얇은선2 15%', '6색 × 1번씩'],
+    makeFn: makeSolid6B, seed: 5001, noFixColor: true
+  },
+  {
+    id: '5c', name: 'Solid-C',
+    concept: '<strong>Solid C</strong> — 점보 35% / 얇은선1 10% / 얇은선2 20% / 컬러 배합 3',
+    chips: ['점보 35%', '얇은선1 10%', '얇은선2 20%', '6색 × 1번씩'],
+    makeFn: makeSolid6C, seed: 5001, noFixColor: true
+  },
 ];
 
 const BGS = [
@@ -589,7 +591,8 @@ TYPES.forEach(type => {
   const cards = document.createElement('div');
   cards.className = 'cards';
 
-  BGS.forEach((bg, bi) => {
+  const bgsToUse = (type.noFixColor) ? [BGS[0]] : BGS;
+  bgsToUse.forEach((bg, bi) => {
     const cid = `T${type.id}_${bi+1}`;
     const card = document.createElement('div');
     card.className = 'card';
@@ -633,7 +636,7 @@ function renderNext(queue, index) {
       const ctx = canvas.getContext('2d');
       const W = canvas.width, H = canvas.height;
       // T5는 프레임 꽉 채우므로 배경 없이 바로 선만 그림, fixColor 미적용
-      if (typeId === '5') {
+      if (typeId === '5a' || typeId === '5b' || typeId === '5c') {
         ctx.clearRect(0, 0, W, H);
         const lines = makeFn(W, seed);
         lines.forEach(l => {
