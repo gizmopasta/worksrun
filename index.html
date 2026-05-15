@@ -174,15 +174,17 @@
     <div style="margin-top:28px;">
       <h1 style="margin-bottom:10px;">Study Composition</h1>
       <ul class="order-list">
-        <li><span class="key">버전</span><span class="val confirm">v10 · 10개 시안 (T2/T3/T3b/T4a/T4b × 배경 2종)</span></li>
+        <li><span class="key">버전</span><span class="val confirm">v10 · 14개 시안 (T2~T6 × 배경 2종)</span></li>
         <li><span class="key">T2 · Chaos</span><span class="val">완전 랜덤 / 점보 30~35% Blue/Green / 6색 균등</span></li>
         <li><span class="key">T3 · Focal</span><span class="val">중앙 굵고 양끝 얇아짐 / 점보 Blue/Green / 6색 균등</span></li>
         <li><span class="key">T3b · Anti-Focal</span><span class="val">양끝 밀집·굵음 / 중앙 얇은 선 2배 밀도 / 점보 Blue/Green / 6색 균등</span></li>
-        <li><span class="key">T4a · L→R</span><span class="val">좌 얇고 촘촘 → 우 굵고 드문 → 맨 우측 가장자리 점보 40% Blue/Green</span></li>
-        <li><span class="key">T4b · R→L</span><span class="val">우 얇고 촘촘 → 좌 굵고 드문 → 맨 좌측 가장자리 점보 40% Blue/Green</span></li>
-        <li><span class="key">공통 규칙</span><span class="val confirm">점보 1개 Blue/Green · 차순위 68% · 6색 전부 보장 · Glow 없음 · 16:9</span></li>
+        <li><span class="key">T4a · L→R</span><span class="val">좌 얇고 촘촘 → 우 굵고 드문 → 맨 우측 가장자리 점보 40%</span></li>
+        <li><span class="key">T4b · R→L</span><span class="val">우 얇고 촘촘 → 좌 굵고 드문 → 맨 좌측 가장자리 점보 40%</span></li>
+        <li><span class="key">T5 · Solid-6</span><span class="val">6색 × 1번씩 / 순서 랜덤 / 너비 랜덤 / 프레임 100% 채움</span></li>
+        <li><span class="key">T6 · Solid-Random</span><span class="val">6색 최소 1번 보장 / 선 수 8~16개 랜덤 / 너비 랜덤 / 프레임 100% 채움</span></li>
+        <li><span class="key">공통 규칙</span><span class="val confirm">T2~T4b: 점보 1개 Blue/Green · 6색 보장 · Glow 없음 · 16:9</span></li>
         <li><span class="key">배경 변수</span><span class="val confirm">White #FFFFFF / Navy2 #202936</span></li>
-        <li><span class="key">최근 오더</span><span class="val">T3b 최신 유지 / T2·T3 원복 / T4 가장자리 점보 40% / Green 배경 제거</span></li>
+        <li><span class="key">최근 오더</span><span class="val">T5 Solid-6 추가 / T6 Solid-Random 추가 (12개 기준 랜덤)</span></li>
       </ul>
     </div>
   </div>
@@ -469,7 +471,57 @@ function makeR2L(W, seed) {
   return ensureAllColors(lines, mkRand(seed + 1));
 }
 
-// ── 섹션 정의 (T1 제외) ───────────────────────────────────
+// ── TYPE 5: SOLID-6 ───────────────────────
+// 6색 각 1번씩, 순서 랜덤, 너비 랜덤, 프레임 꽉 채움
+function makeSolid6(W, seed) {
+  const rand = mkRand(seed);
+  const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
+  const shuffled = [...cols];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  const rawW = shuffled.map(() => 0.3 + rand() * 2.7);
+  const total = rawW.reduce((a, b) => a + b, 0);
+  const widths = rawW.map(w => (w / total) * W);
+  const lines = [];
+  let x = 0;
+  shuffled.forEach((color, i) => {
+    lines.push({ x: x + widths[i] / 2, w: widths[i], color });
+    x += widths[i];
+  });
+  return lines;
+}
+
+// ── TYPE 6: SOLID-RANDOM ──────────────────
+// 6색 최소 1번 보장, 총 선 수 12개 기준 랜덤, 프레임 꽉 채움
+function makeSolidRandom(W, seed) {
+  const rand = mkRand(seed);
+  const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
+  // 12개 기준 ±4 랜덤
+  const total = 8 + Math.floor(rand() * 9); // 8~16개
+  const pool = [...cols]; // 6색 최소 1번 보장
+  while (pool.length < total) {
+    pool.push(cols[Math.floor(rand() * cols.length)]);
+  }
+  // 셔플
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const rawW = pool.map(() => 0.3 + rand() * 2.7);
+  const totalW = rawW.reduce((a, b) => a + b, 0);
+  const widths = rawW.map(w => (w / totalW) * W);
+  const lines = [];
+  let x = 0;
+  pool.forEach((color, i) => {
+    lines.push({ x: x + widths[i] / 2, w: widths[i], color });
+    x += widths[i];
+  });
+  return lines;
+}
+
+// ── 섹션 정의 (T1 제외) ───────────────────────────────────────
 const TYPES = [
   {
     id: '2', name: 'Chaos',
@@ -500,6 +552,18 @@ const TYPES = [
     concept: '<strong>우→좌 흐름</strong> — 우: 얇고 촘촘 / 좌로 갈수록 굵고 드문 / 맨 좌측 점보.',
     chips: ['우: 얇고 촘촘', '좌: 굵고 드문', '맨 좌측 점보 Blue/Green', '6색 균등'],
     makeFn: makeR2L, seed: 9001
+  },
+  {
+    id: '5', name: 'Solid-6',
+    concept: '<strong>6색 솔리드</strong> — 6색 각 1번씩, 순서 랜덤, 너비 랜덤, 프레임 100% 채움.',
+    chips: ['6색 × 1회', '순서 랜덤', '너비 랜덤 정규화', '프레임 100% 채움'],
+    makeFn: makeSolid6, seed: 5001
+  },
+  {
+    id: '6', name: 'Solid-Random',
+    concept: '<strong>랜덤 솔리드</strong> — 6색 최소 1번 보장, 총 선 수 12개 기준 랜덤(8~16개), 프레임 100% 채움.',
+    chips: ['6색 최소 1회 보장', '선 수 8~16개 랜덤', '너비 랜덤 정규화', '프레임 100% 채움'],
+    makeFn: makeSolidRandom, seed: 6001
   },
 ];
 
