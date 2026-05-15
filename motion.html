@@ -387,8 +387,14 @@ function createAnimation(canvasId, bgColor, lines, motionType, duration=5000) {
   }
 
   wrap.addEventListener('click', play);
+  // 버튼에도 연결
+  const btn = wrap.querySelector('.play-btn');
+  if(btn) btn.addEventListener('click', (e) => { e.stopPropagation(); play(); });
   return { play };
 }
+
+// 전역 애니메이션 맵
+const animMap = {};
 
 // ── 섹션 생성 ─────────────────────────────
 const MOTIONS = [
@@ -470,7 +476,7 @@ MOTIONS.forEach(type => {
           <div class="ov-div"></div>
           <div class="ov-item">BG<span>${bg.hex}</span></div>
         </div>
-        <button class="play-btn" onclick="event.stopPropagation()">▶</button>
+        <button class="play-btn">▶</button>
       </div>
     `;
     section.appendChild(card);
