@@ -472,10 +472,10 @@ function makeR2L(W, seed) {
 }
 
 // ── TYPE 5: SOLID-6 ───────────────────────
-// 6색 각 1번씩 / 점보 35% / 얇은선1: 5~7% / 얇은선2: 10~13% / 나머지 균등
+// 6색 × 1번씩 / 점보 35% / 얇은선1 최소 5% / 얇은선2 최소 10% / 나머지 균등
 function makeSolid6(W, seed) {
   const rand = mkRand(seed);
-  const cols = [C.green, C.blue, C.purple, C.navy2, C.white, C.navy1];
+  const cols = ['#00C85F','#008CFF','#4757FF','#202936','#FFFFFF','#F0F5FA'];
 
   // 셔플
   const shuffled = [...cols];
@@ -484,8 +484,8 @@ function makeSolid6(W, seed) {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
 
-  // 점보 컬러 (Green/Blue/Navy2)
-  const jumboCols = [C.green, C.blue, C.navy2];
+  // 점보: Green/Blue/Navy2 중 하나
+  const jumboCols = ['#00C85F','#008CFF','#202936'];
   const jumboCol = jumboCols[Math.floor(rand() * jumboCols.length)];
   const jumboIdx = shuffled.indexOf(jumboCol);
 
@@ -496,30 +496,28 @@ function makeSolid6(W, seed) {
     [nonJumbo[k], nonJumbo[j]] = [nonJumbo[j], nonJumbo[k]];
   }
 
-  // 비율 확정
-  // 점보: 35%
-  // 얇은선1: 5~7%
-  // 얇은선2: 10~13%
-  // 나머지 3개: 남은 비율 균등 분배
-  const ratios = new Array(6).fill(0);
-  ratios[jumboIdx]       = 0.35;
-  ratios[nonJumbo[0]]    = 0.05 + rand() * 0.02; // 5~7%
-  ratios[nonJumbo[1]]    = 0.10 + rand() * 0.03; // 10~13%
-  const used = ratios[jumboIdx] + ratios[nonJumbo[0]] + ratios[nonJumbo[1]];
-  const rem = (1 - used) / 3;
-  ratios[nonJumbo[2]] = rem * (0.85 + rand() * 0.3);
-  ratios[nonJumbo[3]] = rem * (0.85 + rand() * 0.3);
-  ratios[nonJumbo[4]] = rem * (0.85 + rand() * 0.3);
+  // 절대 픽셀 기준으로 너비 확정 (정규화 전에 최소값 보장)
+  const widths = new Array(6).fill(0);
+  widths[jumboIdx]    = W * 0.35;                          // 점보 35%
+  widths[nonJumbo[0]] = W * (0.05 + rand() * 0.02);       // 얇은선1: 5~7%
+  widths[nonJumbo[1]] = W * (0.10 + rand() * 0.03);       // 얇은선2: 10~13%
 
-  // 정규화 후 너비 계산
-  const total = ratios.reduce((a, b) => a + b, 0);
-  const widths = ratios.map(r => (r / total) * W);
+  // 나머지 3개: 남은 너비 균등 분배
+  const used = widths[jumboIdx] + widths[nonJumbo[0]] + widths[nonJumbo[1]];
+  const rem = (W - used) / 3;
+  widths[nonJumbo[2]] = rem * (0.85 + rand() * 0.3);
+  widths[nonJumbo[3]] = rem * (0.85 + rand() * 0.3);
+  widths[nonJumbo[4]] = rem * (0.85 + rand() * 0.3);
+
+  // 합계가 W와 다를 수 있으니 정규화
+  const total = widths.reduce((a, b) => a + b, 0);
+  const finalW = widths.map(w => (w / total) * W);
 
   const lines = [];
   let x = 0;
   shuffled.forEach((color, i) => {
-    lines.push({ x: x + widths[i] / 2, w: widths[i], color });
-    x += widths[i];
+    lines.push({ x: x + finalW[i] / 2, w: finalW[i], color });
+    x += finalW[i];
   });
   return lines;
 }
